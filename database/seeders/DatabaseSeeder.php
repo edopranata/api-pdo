@@ -88,6 +88,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             MenuSeeder::class,
+            CustomerSeeder::class,
+            FactorySeeder::class
         ]);
     }
 }
