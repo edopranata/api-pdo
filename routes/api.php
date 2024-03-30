@@ -1,8 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Customer\CustomerController;
+use App\Http\Controllers\Api\DeliveryOrder\DOSettingController;
 use App\Http\Controllers\Api\Permission\PermissionController;
 use App\Http\Controllers\Api\Role\RoleController;
-use App\Http\Controllers\Api\Setting\SettingController;
 use App\Http\Controllers\Api\User\UserChangePasswordController;
 use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\Api\User\UserInfoController;
@@ -17,10 +18,6 @@ Route::post('login', UserLoginController::class);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::group(['prefix' => 'management', 'as' => 'management.'], function () {
-        Route::group(['prefix' => 'applicationSetting', 'as' => 'applicationSetting.'], function () {
-            Route::get('/', SettingController::class)->name('index')->middleware('permission:admin.management.applicationSetting.index,api');
-            Route::post('/', SettingController::class)->name('changeSetting')->middleware('permission:admin.management.applicationSetting.changeSetting,api');
-        });
 
         Route::group(['prefix' => 'users', 'as' => 'users.'], function () {
             Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:admin.management.users.index,api');
@@ -46,6 +43,18 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('/', [RoleController::class, 'store'])->name('createRole')->middleware('permission:admin.management.roles.createRole,api');
             Route::patch('/{role}', [RoleController::class, 'update'])->name('updateRole')->middleware('permission:admin.management.roles.updateRole,api');
             Route::delete('/{role}', [RoleController::class, 'destroy'])->name('deleteRole')->middleware('permission:admin.management.roles.deleteRole,api');
+        });
+
+        Route::group(['prefix' => 'DOSetting', 'as' => 'DOSetting.'], function () {
+            Route::get('/', [DOSettingController::class, 'index'])->name('index')->middleware('permission:admin.management.DOSetting.index,api');
+        });
+    });
+    Route::group(['prefix' => 'masterData', 'as' => 'masterData.'], function () {
+        Route::group(['prefix' => 'customer', 'as' => 'customer.'], function () {
+            Route::get('', [CustomerController::class, 'index'])->name('index')->middleware('permission:admin.masterData.customer.index,api');
+            Route::post('/', [CustomerController::class, 'store'])->name('createCustomer')->middleware('permission:admin.masterData.customer.createCustomer,api');
+            Route::patch('/{customer}', [CustomerController::class, 'update'])->name('updateCustomer')->middleware('permission:admin.masterData.customer.updateCustomer,api');
+            Route::delete('/{customer}', [CustomerController::class, 'destroy'])->name('deleteCustomer')->middleware('permission:admin.masterData.customer.deleteCustomer,api');
         });
     });
 })->middleware('auth:sanctum');
