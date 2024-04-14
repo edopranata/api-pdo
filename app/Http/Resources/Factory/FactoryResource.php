@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Customer;
+namespace App\Http\Resources\Factory;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Laravolt\Avatar\Facade as Avatar;
 
-class CustomerResource extends JsonResource
+class FactoryResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,13 +17,12 @@ class CustomerResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'phone' => $this->phone,
-            'address' => $this->address,
-            'loan' => $this->whenLoaded('loan', $this->loan?->balance),
+            'margin' => $this->margin,
+            'price' => $this->price,
+            'ppn_tax' => $this->ppn_tax,
+            'pph22_tax' => $this->pph22_tax,
             'created_by' => $this->whenLoaded('user', $this->user?->name),
             'created_at' => $this->created_at->format('d-m-Y H:i:s'),
-            'initial' => Avatar::create($this->name)->toBase64(),
-//            'orders' => DeliveryResource::collection($this->whenLoaded('orders'))
         ];
     }
 }

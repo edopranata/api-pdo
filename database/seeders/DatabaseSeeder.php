@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $faker = \Faker\Factory::create();
         $administrator = 'Administrator';
 
         $user = User::factory()->create([
@@ -32,13 +33,23 @@ class DatabaseSeeder extends Seeder
         foreach ($roles as $role) {
             Role::create(['name' => $role]);
 
-            $admin = User::factory()->create([
-                'name' => $role,
-                'username' => \str($role)->lower(),
-                'email' => \str($role)->lower().'@admin.com',
-            ]);
+            if($role === 'Cashier') {
+                User::factory(rand(10, 20))->create()->each(function ($user) use ($role) {
+                    $user->assignRole($role);
+                });
 
-            $admin->assignRole($role);
+            }else{
+                $admin = User::factory()->create([
+                    'name' => $role,
+                    'username' => \str($role)->lower(),
+                    'email' => \str($role)->lower().'@admin.com',
+                ]);
+
+                $admin->assignRole($role);
+            }
+
+
+
         }
 
         $permissions = collect(Route::getRoutes())
@@ -89,7 +100,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MenuSeeder::class,
             CustomerSeeder::class,
-            FactorySeeder::class
+            FactorySeeder::class,
+            CashSeeder::class
         ]);
     }
 }

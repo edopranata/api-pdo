@@ -103,7 +103,7 @@ class PermissionController extends Controller
                     ], [
                         'title' => \str($menuParent)->headline(),
                         'path' => \str($permission['path'])->replace('api', ''),
-                        'icon' => 'mdi-arrow-right'
+                        'icon' => 'double_arrow'
                     ]);
                 if ($path->last() === 'index') {
                     $menu->children()->firstOrCreate([

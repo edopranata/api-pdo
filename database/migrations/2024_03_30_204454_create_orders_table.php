@@ -15,7 +15,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->uuid('id');
+            $table->uuid('id')->primary()->index();
             $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Factory::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Customer::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->double('net_total')->default(0)->comment('Pendapatan Bersih (Rp. Berat * Margin)');
             $table->dateTime('invoice_status')->nullable()->comment('Tanggal invoice');
             $table->dateTime('income_status')->nullable()->comment('Tanggal uang masuk dari pabrik');
-
+            $table->softDeletes();
             $table->timestamps();
         });
     }

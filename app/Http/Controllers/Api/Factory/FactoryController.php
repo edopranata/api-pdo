@@ -1,32 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Api\Customer;
+namespace App\Http\Controllers\Api\Factory;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Customer\CustomerCollection;
-use App\Http\Resources\Customer\CustomerResource;
-use App\Models\Customer;
+use App\Http\Resources\Factory\FactoryCollection;
+use App\Http\Resources\Factory\FactoryResource;
+use App\Models\Factory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class CustomerController extends Controller
+class FactoryController extends Controller
 {
-    public function index(Request $request): CustomerCollection
+    public function index(Request $request)
     {
-        $query = Customer::query()
+        $query = Factory::query()
             ->when($request->get('name'), function ($query, $search) {
                 return $query->where('name', 'LIKE', "%$search%");
-            })
-            ->when($request->get('phone'), function ($query, $search) {
-                return $query->where('phone', 'LIKE', "%$search%");
-            })
-            ->when($request->get('address'), function ($query, $search) {
-                return $query->where('address', 'LIKE', "%$search%");
-            })
-            ->when($request->get('user'), function ($query, $search) {
-                return $query->whereRelation("user", "name", "like", "%$search%");
             })
             ->when($request->get('sortBy'), function ($query, $sort) {
                 $sortBy = collect(json_decode($sort));
@@ -35,7 +26,8 @@ class CustomerController extends Controller
 
         $data = $request->get('limit', 0) > 0 ? $query->paginate($request->get('limit', 10)) : $query->get();
 
-        return new CustomerCollection($data);
+//        return $data;
+        return new FactoryCollection($data);
     }
 
     /**
@@ -47,27 +39,27 @@ class CustomerController extends Controller
         try {
             $validator = Validator::make($request->only([
                 'name',
-                'phone',
             ]), [
                 'name' => 'required|string|min:3|max:30',
-                'phone' => 'required|string|max:20',
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
             }
 
-            $customer = Customer::query()
+            $factory = Factory::query()
                 ->create([
                     'name' => $request->name,
-                    'phone' => $request->phone,
-                    'address' => $request->address,
+                    'margin' => $request->margin,
+                    'price' => $request->price,
+                    'ppn_tax' => $request->ppn_tax,
+                    'pph22_tax' => $request->pph22_tax,
                     'user_id' => auth('api')->id()
                 ]);
 
             DB::commit();
 
-            return new CustomerResource($customer->load('user'));
+            return new FactoryResource($factory->load('user'));
 
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -78,31 +70,32 @@ class CustomerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Customer $customer)
+    public function update(Request $request, Factory $factory)
     {
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
                 'name',
-                'phone',
             ]), [
                 'name' => 'required|string|min:3|max:30',
-                'phone' => 'required|string|max:20',
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
             }
 
-            $customer->update([
+            $factory->update([
                 'name' => $request->name,
-                'phone' => $request->phone,
-                'address' => $request->address,
+                'margin' => $request->margin,
+                'price' => $request->price,
+                'ppn_tax' => $request->ppn_tax,
+                'pph22_tax' => $request->pph22_tax,
+                'user_id' => auth()->id()
             ]);
 
             DB::commit();
 
-            return new CustomerResource($customer->load('user'));
+            return new FactoryResource($factory->load('user'));
 
         } catch (\Exception $exception) {
             DB::rollBack();
@@ -113,16 +106,16 @@ class CustomerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Customer $customer, Request $request): JsonResponse
+    public function destroy(Factory $factory, Request $request): JsonResponse
     {
         DB::beginTransaction();
         try {
-            $customers = $request->customer_id;
-            if (is_array($customers)) {
-                Customer::query()
-                    ->whereIn('id', $request->customer_id)->delete();
+            $factorys = $request->factory_id;
+            if (is_array($factorys)) {
+                Factory::query()
+                    ->whereIn('id', $request->factory_id)->delete();
             } else {
-                $customer->delete();
+                $factory->delete();
             }
 
             DB::commit();

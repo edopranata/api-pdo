@@ -2,11 +2,14 @@
 
 namespace App\Http\Resources\User;
 
+use App\Http\Resources\Cash\CashResource;
 use App\Http\Resources\Menu\MenuResource;
+use App\Models\Cash;
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Collection;
+use Laravolt\Avatar\Facade as Avatar;
 
 class UserResource extends JsonResource
 {
@@ -17,13 +20,15 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if($request->routeIs('admin.management.users.index')){
+        if($request->routeIs('admin.management.users.index') || $request->routeIs('admin.management.cash.index')){
             return [
                 'id'        => $this->id,
                 'name'      => $this->name,
                 'username'  => $this->username,
                 'email'     => $this->email,
                 'roles'     => $this->getRoleNames(),
+                'cash'      => new CashResource($this->whenLoaded('cash')),
+                'photo'     => $this->photo ?? Avatar::create($this->name)->toBase64(),
                 'created_at'=> $this->created_at->format('d-m-Y H:i:s'),
             ];
         }else{
@@ -36,7 +41,7 @@ class UserResource extends JsonResource
                     'username'      => $this->username,
                     'email'         => $this->email,
                     'roles'     => $this->getRoleNames(),
-                    'photo_url'     => $this->photo_url ?? asset('/avatar.svg'),
+                    'photo_url'     => $this->photo_url ?? Avatar::create($this->name)->toBase64(),
                 ],
                 'routes'        => $permissions->pluck('name'),
                 'menu'          => MenuResource::collection($this->getMenu($permissions))

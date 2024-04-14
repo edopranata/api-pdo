@@ -3,63 +3,200 @@
 namespace App\Http\Controllers\Api\Loan;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Customer\CustomerCollection;
+use App\Http\Traits\CashTrait;
+use App\Http\Traits\InvoiceTrait;
+use App\Models\Customer;
+use App\Models\Invoice;
+use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class LoanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use InvoiceTrait, CashTrait;
+
+    public function index(Request $request)
     {
-        //
+        $query = Customer::query()
+            ->with('loan')
+            ->when($request->get('search'), function ($query, $search) {
+                return $query->where('name', 'LIKE', "%$search%");
+            })
+            ->when($request->get('search'), function ($query, $search) {
+                return $query->orWhere('phone', 'LIKE', "%$search%");
+            })
+            ->when($request->get('search'), function ($query, $search) {
+                return $query->orWhere('address', 'LIKE', "%$search%");
+            })
+            ->when($request->get('sortBy'), function ($query, $sort) {
+                $sortBy = collect(json_decode($sort));
+                return $query->orderBy($sortBy['key'], $sortBy['order']);
+            });
+
+        $data = $query->paginate($request->get('limit', 10));
+
+        return new CustomerCollection($data);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function addLoan(Customer $customer, Request $request)
     {
-        //
+        $loan = $customer->loan();
+        $detail = $loan->first();
+
+        $cash = auth('api')->user()->cash()->first();
+        $trade_date = now();
+
+        $validator = Validator::make($request->only([
+            'balance',
+        ]), [
+            'balance' => ['required', 'numeric', 'min:1',
+                function (string $attribute, mixed $value, Closure $fail) use ($cash) {
+                    $cash = $cash ? max($cash->balance, 0) : 0;
+
+                    if ($value > $cash) {
+                        $fail("Cash {$attribute} is {$cash}.");
+                    }
+                }],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            $type = 'LN';
+            $sequence = $this->getLastSequence($trade_date, $type);
+            $invoice_number = 'TM' . $type . $trade_date->format('Y') . sprintf('%08d', $sequence);
+
+            if ($loan->exists()) {
+                $details = $detail->details()->create([
+                    'balance' => $request->balance,
+                    'opening_balance' => $detail->balance,
+                    'trade_date' => $trade_date,
+                    'user_id' => auth('api')->id()
+                ]);
+
+                $detail->update([
+                    'balance' => $detail->balance + $request->balance
+                ]);
+
+                $invoice = $customer->invoices()
+                    ->create([
+                        'user_id' => auth()->id(),
+                        'trade_date' => $trade_date,
+                        'invoice_number' => $invoice_number,
+                        'type' => $type,
+                        'sequence' => $sequence,
+                    ]);
+
+                // Create Invoice Loan
+                $invoice->loan()->create([
+                    'loan_detail_id' => $details->id
+                ]);
+            } else {
+                $detail = $loan->create([
+                    'balance' => $request->balance,
+                    'user_id' => auth('api')->id()
+                ]);
+
+                $details = $detail->details()->create([
+                    'balance' => $request->balance,
+                    'opening_balance' => 0,
+                    'trade_date' => $trade_date,
+                    'user_id' => auth('api')->id()
+                ]);
+
+                $invoice = $customer->invoices()
+                    ->create([
+                        'user_id' => auth('api')->id(),
+                        'trade_date' => $trade_date,
+                        'invoice_number' => $invoice_number,
+                        'type' => $type,
+                        'sequence' => $sequence,
+                    ]);
+
+                // Create Invoice Loan
+                $invoice->loan()->create([
+                    'loan_detail_id' => $details->id
+                ]);
+            }
+
+            $this->decrementCash($request->balance, $trade_date, $invoice);
+
+            DB::commit();
+        } catch (\Exception $exception) {
+
+            DB::rollBack();
+            abort(403, $exception->getCode() . ' ' . $exception->getMessage());
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function payLoan(Customer $customer, Request $request)
     {
-        //
-    }
+        $loan = $customer->loan();
+        $detail = $loan->first();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $trade_date = now();
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $balance =  $loan->exists() ? $detail->balance : 0;
+        $validator = Validator::make($request->only([
+            'balance',
+        ]), [
+            'balance' => 'required|numeric|min:1|max:' . $balance
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        DB::beginTransaction();
+        try {
+            $type = 'LN';
+            $sequence = $this->getLastSequence($trade_date, $type);
+            $invoice_number = 'TM' . $type . $trade_date->format('Y') . sprintf('%08d', $sequence);
+
+            if ($loan->exists()) {
+                $details = $detail->details()->create([
+                    'balance' => $request->balance * -1,
+                    'opening_balance' => $detail->balance,
+                    'trade_date' => $trade_date,
+                    'user_id' => auth('api')->id()
+                ]);
+
+                $detail->update([
+                    'balance' => $detail->balance - $request->balance
+                ]);
+
+                $invoice = $customer->invoices()
+                    ->create([
+                        'user_id' => auth('api')->id(),
+                        'trade_date' => $trade_date,
+                        'invoice_number' => $invoice_number,
+                        'type' => $type,
+                        'sequence' => $sequence,
+                    ]);
+
+                // Create Invoice Loan
+                $invoice->loan()->create([
+                    'loan_detail_id' => $details->id
+                ]);
+//                dd($invoice);
+
+                $this->incrementCash($request->balance, $trade_date, $invoice);
+
+            } else {
+                return response()->json(['status' => false, 'errors' => ['balance' => ['Customer has no loan']]], 422);
+            }
+
+
+            DB::commit();
+        } catch (\Exception $exception) {
+
+            DB::rollBack();
+            abort(403, $exception->getCode() . ' ' . $exception->getMessage());
+        }
     }
 }

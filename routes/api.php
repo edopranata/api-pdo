@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\Api\Cash\CashController;
 use App\Http\Controllers\Api\Customer\CustomerController;
 use App\Http\Controllers\Api\DeliveryOrder\DOSettingController;
+use App\Http\Controllers\Api\Factory\FactoryController;
+use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
 use App\Http\Controllers\Api\Role\RoleController;
 use App\Http\Controllers\Api\User\UserChangePasswordController;
@@ -45,8 +48,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::delete('/{role}', [RoleController::class, 'destroy'])->name('deleteRole')->middleware('permission:admin.management.roles.deleteRole,api');
         });
 
-        Route::group(['prefix' => 'DOSetting', 'as' => 'DOSetting.'], function () {
-            Route::get('/', [DOSettingController::class, 'index'])->name('index')->middleware('permission:admin.management.DOSetting.index,api');
+        Route::group(['prefix' => 'cash', 'as' => 'cash.'], function () {
+            Route::get('/', [CashController::class, 'index'])->name('index')->middleware('permission:admin.management.cash.index,api');
+            Route::post('/{user}/giveCash', [CashController::class, 'giveCash'])->name('giveCash')->middleware('permission:admin.management.cash.giveCash,api');
+            Route::post('/{user}/takeCash', [CashController::class, 'takeCash'])->name('takeCash')->middleware('permission:admin.management.cash.takeCash,api');
         });
     });
     Route::group(['prefix' => 'masterData', 'as' => 'masterData.'], function () {
@@ -55,6 +60,20 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('/', [CustomerController::class, 'store'])->name('createCustomer')->middleware('permission:admin.masterData.customer.createCustomer,api');
             Route::patch('/{customer}', [CustomerController::class, 'update'])->name('updateCustomer')->middleware('permission:admin.masterData.customer.updateCustomer,api');
             Route::delete('/{customer}', [CustomerController::class, 'destroy'])->name('deleteCustomer')->middleware('permission:admin.masterData.customer.deleteCustomer,api');
+        });
+
+        Route::group(['prefix' => 'factory', 'as' => 'factory.'], function () {
+            Route::get('', [FactoryController::class, 'index'])->name('index')->middleware('permission:admin.masterData.factory.index,api');
+            Route::post('/', [FactoryController::class, 'store'])->name('createFactory')->middleware('permission:admin.masterData.factory.createFactory,api');
+            Route::patch('/{factory}', [FactoryController::class, 'update'])->name('updateFactory')->middleware('permission:admin.masterData.factory.updateFactory,api');
+            Route::delete('/{factory}', [FactoryController::class, 'destroy'])->name('deleteFactory')->middleware('permission:admin.masterData.factory.deleteFactory,api');
+        });
+    });
+    Route::group(['prefix' => 'transaction', 'as' => 'transaction.'], function () {
+        Route::group(['prefix' => 'loan', 'as' => 'loan.'], function () {
+            Route::get('', [LoanController::class, 'index'])->name('index')->middleware('permission:admin.transaction.loan.index,api');
+            Route::post('/{customer}/addLoan', [LoanController::class, 'addLoan'])->name('addLoan')->middleware('permission:admin.transaction.loan.addLoan,api');
+            Route::post('/{customer}/payLoan', [LoanController::class, 'payLoan'])->name('payLoan')->middleware('permission:admin.transaction.loan.payLoan,api');
         });
     });
 })->middleware('auth:sanctum');
