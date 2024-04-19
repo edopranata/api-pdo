@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('invoice_details', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary()->index();
             $table->foreignIdFor(Invoice::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Order::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->softDeletes();

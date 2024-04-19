@@ -30,6 +30,8 @@ return new class extends Migration
             $table->double('pph22_total')->default(0)->comment('Rp. PPh 22');
             $table->double('gross_total')->default(0)->comment('Pendapatan Kotor  (Rp. Berat * Harga Pabrik)');
             $table->double('net_total')->default(0)->comment('Pendapatan Bersih (Rp. Berat * Margin)');
+            $table->double('customer_price')->default(0)->comment('Harga jual customer (Net Price * Margin)');
+            $table->double('customer_total')->default(0)->comment('Total terima customer (Customer Price * Net Weight)');
             $table->dateTime('invoice_status')->nullable()->comment('Tanggal invoice');
             $table->dateTime('income_status')->nullable()->comment('Tanggal uang masuk dari pabrik');
             $table->softDeletes();

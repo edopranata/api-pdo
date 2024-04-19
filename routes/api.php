@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\Api\Cash\CashController;
 use App\Http\Controllers\Api\Customer\CustomerController;
-use App\Http\Controllers\Api\DeliveryOrder\DOSettingController;
+use App\Http\Controllers\Api\DeliveryOrder\DeliveryOrderController;
 use App\Http\Controllers\Api\Factory\FactoryController;
+use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
 use App\Http\Controllers\Api\Role\RoleController;
@@ -74,6 +75,20 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('', [LoanController::class, 'index'])->name('index')->middleware('permission:admin.transaction.loan.index,api');
             Route::post('/{customer}/addLoan', [LoanController::class, 'addLoan'])->name('addLoan')->middleware('permission:admin.transaction.loan.addLoan,api');
             Route::post('/{customer}/payLoan', [LoanController::class, 'payLoan'])->name('payLoan')->middleware('permission:admin.transaction.loan.payLoan,api');
+        });
+
+        Route::group(['prefix' => 'order', 'as' => 'order.'], function () {
+            Route::get('', [DeliveryOrderController::class, 'index'])->name('index')->middleware('permission:admin.transaction.order.index,api');
+            Route::post('{factory}', [DeliveryOrderController::class, 'store'])->name('createOrder')->middleware('permission:admin.transaction.order.createOrder,api');
+            Route::patch('{order}', [DeliveryOrderController::class, 'update'])->name('updateOrder')->middleware('permission:admin.transaction.order.updateOrder,api');
+            Route::delete('{order}', [DeliveryOrderController::class, 'destroy'])->name('deleteOrder')->middleware('permission:admin.transaction.order.deleteOrder,api');
+        });
+
+        Route::group(['prefix' => 'invoice', 'as' => 'invoice.'], function () {
+            Route::get('', [InvoiceController::class, 'index'])->name('index')->middleware('permission:admin.transaction.invoice.index,api');
+            Route::get('{customer}', [InvoiceController::class, 'show'])->name('showInvoice')->middleware('permission:admin.transaction.invoice.showInvoice,api');
+            Route::post('{customer}', [InvoiceController::class, 'store'])->name('createInvoice')->middleware('permission:admin.transaction.invoice.createInvoice,api');
+
         });
     });
 })->middleware('auth:sanctum');
