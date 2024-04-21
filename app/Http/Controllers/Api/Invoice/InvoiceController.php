@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Customer\CustomerOrderCollection;
 use App\Http\Resources\Customer\CustomerResource;
 use App\Http\Resources\Order\DeliveryOrderCollection;
+use App\Http\Resources\Report\InvoiceDataResource;
 use App\Http\Traits\CashTrait;
 use App\Http\Traits\InvoiceTrait;
 use App\Http\Traits\OrderTrait;
@@ -180,10 +181,11 @@ class InvoiceController extends Controller
 
             DB::commit();
 
+            return InvoiceDataResource::make($invoice->load(['orders', 'installment', 'customer']));
+
         } catch (\Exception $exception) {
             DB::rollBack();
             abort(403, $exception->getCode() . ' ' . $exception->getMessage());
         }
-        return $request->all();
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\Factory\FactoryController;
 use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
+use App\Http\Controllers\Api\Report\InvoiceDataController;
 use App\Http\Controllers\Api\Role\RoleController;
 use App\Http\Controllers\Api\User\UserChangePasswordController;
 use App\Http\Controllers\Api\User\UserController;
@@ -75,6 +76,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('', [LoanController::class, 'index'])->name('index')->middleware('permission:admin.transaction.loan.index,api');
             Route::post('/{customer}/addLoan', [LoanController::class, 'addLoan'])->name('addLoan')->middleware('permission:admin.transaction.loan.addLoan,api');
             Route::post('/{customer}/payLoan', [LoanController::class, 'payLoan'])->name('payLoan')->middleware('permission:admin.transaction.loan.payLoan,api');
+            Route::get('/{invoice}', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.transaction.loan.print,api');
         });
 
         Route::group(['prefix' => 'order', 'as' => 'order.'], function () {
@@ -88,7 +90,14 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('', [InvoiceController::class, 'index'])->name('index')->middleware('permission:admin.transaction.invoice.index,api');
             Route::get('{customer}', [InvoiceController::class, 'show'])->name('showInvoice')->middleware('permission:admin.transaction.invoice.showInvoice,api');
             Route::post('{customer}', [InvoiceController::class, 'store'])->name('createInvoice')->middleware('permission:admin.transaction.invoice.createInvoice,api');
+            Route::get('{invoice}/print', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.transaction.invoice.print,api');
 
+        });
+    });
+    Route::group(['prefix' => 'report', 'as' => 'report.'], function () {
+        Route::group(['prefix' => 'invoiceData', 'as' => 'invoiceData.'], function () {
+            Route::get('', [InvoiceDataController::class, 'index'])->name('index')->middleware('permission:admin.report.invoiceData.index,api');
+            Route::get('{invoice}', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.report.invoiceData.print,api');
         });
     });
 })->middleware('auth:sanctum');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Loan;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Customer\CustomerCollection;
+use App\Http\Resources\Report\InvoiceDataResource;
 use App\Http\Traits\CashTrait;
 use App\Http\Traits\InvoiceTrait;
 use App\Models\Customer;
@@ -127,6 +128,8 @@ class LoanController extends Controller
             $this->decrementCash($request->balance, $trade_date, $invoice);
 
             DB::commit();
+
+            return InvoiceDataResource::make($invoice->load(['orders', 'installment', 'customer']));
         } catch (\Exception $exception) {
 
             DB::rollBack();
@@ -183,7 +186,6 @@ class LoanController extends Controller
                 $invoice->loan()->create([
                     'loan_detail_id' => $details->id
                 ]);
-//                dd($invoice);
 
                 $this->incrementCash($request->balance, $trade_date, $invoice);
 
@@ -191,8 +193,10 @@ class LoanController extends Controller
                 return response()->json(['status' => false, 'errors' => ['balance' => ['Customer has no loan']]], 422);
             }
 
-
             DB::commit();
+
+            return InvoiceDataResource::make($invoice->load(['orders', 'installment', 'customer']));
+
         } catch (\Exception $exception) {
 
             DB::rollBack();

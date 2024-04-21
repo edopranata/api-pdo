@@ -25,9 +25,9 @@ class Invoice extends Model
         'updated_at' => 'datetime:Y-m-d H:i:s',
     ];
 
-    public function customer(): MorphTo
+    public function customer(): BelongsTo
     {
-        return $this->morphTo()->withTrashed();
+        return $this->belongsTo(Customer::class);
     }
 
     public function user(): BelongsTo
@@ -40,7 +40,7 @@ class Invoice extends Model
         return $this->hasMany(InvoiceDetail::class);
     }
 
-    public function detail_do(): HasManyThrough
+    public function orders(): HasManyThrough
     {
         return $this->hasManyThrough(Order::class, InvoiceDetail::class, 'invoice_id', 'id', 'id', 'order_id');
     }
@@ -50,8 +50,8 @@ class Invoice extends Model
         return $this->hasOne(InvoiceLoan::class);
     }
 
-    public function loan_details(): HasOneThrough
+    public function installment(): HasOneThrough
     {
-        return $this->hasOneThrough(LoanDetail::class, InvoiceLoan::class, 'invoice_id', 'id', 'id', 'loan_details_id');
+        return $this->hasOneThrough(LoanDetail::class, InvoiceLoan::class, 'invoice_id', 'id', 'id', 'loan_detail_id');
     }
 }
