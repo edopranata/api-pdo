@@ -33,12 +33,12 @@ class DatabaseSeeder extends Seeder
         foreach ($roles as $role) {
             Role::create(['name' => $role]);
 
-            if($role === 'Cashier') {
-                User::factory(rand(10, 20))->create()->each(function ($user) use ($role) {
-                    $user->assignRole($role);
-                });
-
-            }else{
+//            if($role === 'Cashier') {
+//                User::factory(rand(10, 20))->create()->each(function ($user) use ($role) {
+//                    $user->assignRole($role);
+//                });
+//
+//            }else{
                 $admin = User::factory()->create([
                     'name' => $role,
                     'username' => \str($role)->lower(),
@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
                 ]);
 
                 $admin->assignRole($role);
-            }
+//            }
 
 
 
@@ -99,9 +99,9 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             MenuSeeder::class,
-            CustomerSeeder::class,
+            //CustomerSeeder::class,
             FactorySeeder::class,
-            CashSeeder::class
+            //CashSeeder::class
         ]);
     }
 }
