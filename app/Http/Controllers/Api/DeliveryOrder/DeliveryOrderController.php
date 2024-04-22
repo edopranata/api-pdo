@@ -28,7 +28,7 @@ class DeliveryOrderController extends Controller
         $customers = Customer::query()->with('loan')->get();
         $factories = Factory::query()->get();
         return response()->json([
-            'order' => new DeliveryOrderCollection($deliveries),
+            'order' => DeliveryOrderCollection::make($deliveries),
             'customers' => CustomerResource::collection($customers),
             'factories' => FactoryResource::collection($factories)
         ], 201);
