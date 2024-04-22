@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Cash\CashController;
 use App\Http\Controllers\Api\Customer\CustomerController;
 use App\Http\Controllers\Api\DeliveryOrder\DeliveryOrderController;
 use App\Http\Controllers\Api\Factory\FactoryController;
+use App\Http\Controllers\Api\Income\OrderIncomeController;
 use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
@@ -97,6 +98,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('{invoice}/print', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.transaction.invoice.print,api');
 
         });
+        Route::group(['prefix' => 'income', 'as' => 'income.'], function () {
+            Route::get('', [OrderIncomeController::class, 'index'])->name('index')->middleware('permission:admin.transaction.income.index,api');
+            Route::post('', [OrderIncomeController::class, 'store'])->name('createIncome')->middleware('permission:admin.transaction.income.createIncome,api');
+
+        });
     });
     Route::group(['prefix' => 'report', 'as' => 'report.'], function () {
         Route::group(['prefix' => 'invoiceData', 'as' => 'invoiceData.'], function () {
@@ -105,7 +111,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         });
         Route::group(['prefix' => 'deliveryOrder', 'as' => 'deliveryOrder.'], function () {
             Route::get('', [ReportDeliveryOrderController::class, 'index'])->name('index')->middleware('permission:admin.report.deliveryOrder.index,api');
-            Route::get('{invoice}', [ReportDeliveryOrderController::class, 'show'])->name('print')->middleware('permission:admin.report.deliveryOrder.print,api');
         });
     });
 })->middleware('auth:sanctum');
