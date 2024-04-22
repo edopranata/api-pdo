@@ -59,12 +59,25 @@ class CustomerController extends Controller
 
             $customer = Customer::query()
                 ->create([
-                    'name' => $request->name,
-                    'phone' => $request->phone,
-                    'address' => $request->address,
+                    'name' => $request->post('name'),
+                    'phone' => $request->post('phone'),
+                    'address' => $request->post('address'),
                     'user_id' => auth('api')->id()
                 ]);
 
+            if($request->post('loan')){
+                $loan = $customer->loan()->create([
+                    'balance' => $request->post('loan'),
+                    'user_id' => auth('api')->id()
+                ]);
+
+                $loan->details()->create([
+                    'balance' => $request->post('loan'),
+                    'opening_balance' => 0,
+                    'trade_date' => now(),
+                    'user_id' => auth('api')->id()
+                ]);
+            }
             DB::commit();
 
             return new CustomerResource($customer->load('user'));
