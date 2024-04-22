@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\BlankController;
 use App\Http\Controllers\Api\Cash\CashController;
 use App\Http\Controllers\Api\Customer\CustomerController;
 use App\Http\Controllers\Api\DeliveryOrder\DeliveryOrderController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
 use App\Http\Controllers\Api\Report\InvoiceDataController;
+use App\Http\Controllers\Api\Report\ReportDeliveryOrderController;
 use App\Http\Controllers\Api\Role\RoleController;
 use App\Http\Controllers\Api\User\UserChangePasswordController;
 use App\Http\Controllers\Api\User\UserController;
@@ -62,6 +64,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('/', [CustomerController::class, 'store'])->name('createCustomer')->middleware('permission:admin.masterData.customer.createCustomer,api');
             Route::patch('/{customer}', [CustomerController::class, 'update'])->name('updateCustomer')->middleware('permission:admin.masterData.customer.updateCustomer,api');
             Route::delete('/{customer}', [CustomerController::class, 'destroy'])->name('deleteCustomer')->middleware('permission:admin.masterData.customer.deleteCustomer,api');
+            Route::post('/firstLoan', [BlankController::class, 'blank'])->name('firstLoan')->middleware('permission:admin.masterData.customer.firstLoan,api');
+
         });
 
         Route::group(['prefix' => 'factory', 'as' => 'factory.'], function () {
@@ -98,6 +102,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::group(['prefix' => 'invoiceData', 'as' => 'invoiceData.'], function () {
             Route::get('', [InvoiceDataController::class, 'index'])->name('index')->middleware('permission:admin.report.invoiceData.index,api');
             Route::get('{invoice}', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.report.invoiceData.print,api');
+        });
+        Route::group(['prefix' => 'deliveryOrder', 'as' => 'deliveryOrder.'], function () {
+            Route::get('', [ReportDeliveryOrderController::class, 'index'])->name('index')->middleware('permission:admin.report.deliveryOrder.index,api');
+            Route::get('{invoice}', [ReportDeliveryOrderController::class, 'show'])->name('print')->middleware('permission:admin.report.deliveryOrder.print,api');
         });
     });
 })->middleware('auth:sanctum');
