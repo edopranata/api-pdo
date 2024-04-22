@@ -12,6 +12,7 @@ use App\Http\Traits\InvoiceTrait;
 use App\Http\Traits\OrderTrait;
 use App\Models\Customer;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -26,7 +27,9 @@ class InvoiceController extends Controller
     public function index(Request $request): CustomerOrderCollection
     {
         $orders = Customer::query()
-            ->with(['orders'])
+            ->with(['orders' => function ($query) {
+                $query->whereNull('invoice_status');
+            }])
             ->whereRelation('orders', 'invoice_status', '=', null)
             ->paginate($request->get('limit', 10));
         return new CustomerOrderCollection($orders);

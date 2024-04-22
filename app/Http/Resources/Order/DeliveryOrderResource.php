@@ -33,6 +33,7 @@ class DeliveryOrderResource extends JsonResource
             'ppn_total' => $this->ppn_total,
             'pph22_total' => $this->pph22_total,
             'gross_total' => $this->gross_total,
+            'total' => ($this->gross_total + $this->ppn_total) - $this->pph_total,
             'net_total' => $this->net_total,
             'customer_price' => $this->customer_price,
             'customer_total' => $this->customer_total,

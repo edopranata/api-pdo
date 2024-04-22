@@ -14,10 +14,18 @@ class DeliveryOrderCollection extends ResourceCollection
      */
     public function toArray(Request $request): array
     {
+        $meta = collect($this->resource);
         return [
             'data' => DeliveryOrderResource::collection($this->collection->all()),
             'meta' => [
-                'total' => collect($this->resource)['total']
+                'total' => $meta->has('total') ? (int) $meta->get('total') : 0,
+            ],
+            'orders' => [
+                'ppn_total' => $this->collection->sum('ppn_total'),
+                'pph22_total' => $this->collection->sum('pph22_total'),
+                'gross_total' => $this->collection->sum('gross_total'),
+                'gross_ppn_total' => $this->collection->sum('gross_total') + $this->collection->sum('ppn_total'),
+                'total' => ($this->collection->sum('gross_total') + $this->collection->sum('ppn_total')) - $this->collection->sum('pph22_total'),
             ]
         ];
     }
