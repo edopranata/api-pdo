@@ -23,7 +23,7 @@ class DeliveryOrderResource extends JsonResource
             'customer' => new CustomerResource($this->whenLoaded('customer')),
             'factory' => new FactoryResource($this->whenLoaded('factory')),
             'created_by' => $this->whenLoaded('user', $this->user?->name),
-            'trade_date' => $this->whenNotNull($this->trade_date->format('Y/m/d H:i:s')),
+            'trade_date' => $this->whenNotNull($this->trade_date->format('Y/m/d')),
 
             'net_weight' => $this->net_weight,
             'net_price' => $this->net_price,
@@ -38,8 +38,8 @@ class DeliveryOrderResource extends JsonResource
             'customer_price' => $this->customer_price,
             'customer_total' => $this->customer_total,
 
-            'invoice_status' => $this->whenNotNull($this->invoice_status ? $this->invoice_status->format('Y/m/d H:i:s') : null),
-            'income_status' => $this->whenNotNull($this->income_status ? $this->income_status->format('Y/m/d H:i:s') : null),
+            'invoice_status' => $this->whenNotNull($this->invoice_status ? $this->invoice_status->format('Y/m/d') : null),
+            'income_status' => $this->whenNotNull($this->income_status ? $this->income_status->format('Y/m/d') : null),
             'created_at' => $this->whenNotNull($this->created_at->format('Y/m/d H:i:s')),
         ];
     }

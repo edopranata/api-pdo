@@ -3,12 +3,14 @@
 use App\Http\Controllers\Api\BlankController;
 use App\Http\Controllers\Api\Cash\CashController;
 use App\Http\Controllers\Api\Customer\CustomerController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeliveryOrder\DeliveryOrderController;
 use App\Http\Controllers\Api\Factory\FactoryController;
 use App\Http\Controllers\Api\Income\OrderIncomeController;
 use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
+use App\Http\Controllers\Api\Price\FactoryPriceController;
 use App\Http\Controllers\Api\Report\InvoiceDataController;
 use App\Http\Controllers\Api\Report\ReportDeliveryOrderController;
 use App\Http\Controllers\Api\Role\RoleController;
@@ -25,8 +27,8 @@ Route::middleware('auth:sanctum')->post('logout', UserLogoutController::class);
 Route::post('login', UserLoginController::class);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::post('/', [DashboardController::class, 'index'])->name('index');
     Route::group(['prefix' => 'management', 'as' => 'management.'], function () {
-
         Route::group(['prefix' => 'users', 'as' => 'users.'], function () {
             Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:admin.management.users.index,api');
             Route::post('/', [UserController::class, 'store'])->name('createUser')->middleware('permission:admin.management.users.createUser,api');
@@ -34,14 +36,12 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('deleteUser')->middleware('permission:admin.management.users.deleteUser,api');
             Route::post('/{user}', [UserController::class, 'update'])->name('resetPassword')->middleware('permission:admin.management.users.resetPassword,api');
         });
-
         Route::group(['prefix' => 'permissions', 'as' => 'permissions.'], function () {
             Route::get('/', [PermissionController::class, 'index'])->name('index')->middleware('permission:admin.management.permissions.index,api');
             Route::post('/', [PermissionController::class, 'sync'])->name('syncPermissions')->middleware('permission:admin.management.permissions.syncPermissions,api');
             Route::get('/{id}/view', [PermissionController::class, 'view'])->name('viewPermission')->middleware('permission:admin.management.permissions.viewPermission,api');
             Route::post('/{id}/view', [PermissionController::class, 'viewRolesUsers']);
         });
-
         Route::group(['prefix' => 'roles', 'as' => 'roles.'], function () {
             Route::get('/', [RoleController::class, 'index'])->name('index')->middleware('permission:admin.management.roles.index,api');
             Route::get('/{role}/view', [RoleController::class, 'show'])->name('viewRole')->middleware('permission:admin.management.roles.viewRole,api');
@@ -52,11 +52,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::patch('/{role}', [RoleController::class, 'update'])->name('updateRole')->middleware('permission:admin.management.roles.updateRole,api');
             Route::delete('/{role}', [RoleController::class, 'destroy'])->name('deleteRole')->middleware('permission:admin.management.roles.deleteRole,api');
         });
-
         Route::group(['prefix' => 'cash', 'as' => 'cash.'], function () {
             Route::get('/', [CashController::class, 'index'])->name('index')->middleware('permission:admin.management.cash.index,api');
             Route::post('/{user}/giveCash', [CashController::class, 'giveCash'])->name('giveCash')->middleware('permission:admin.management.cash.giveCash,api');
             Route::post('/{user}/takeCash', [CashController::class, 'takeCash'])->name('takeCash')->middleware('permission:admin.management.cash.takeCash,api');
+        });
+        Route::group(['prefix' => 'price', 'as' => 'price.'], function () {
+            Route::get('/', [FactoryPriceController::class, 'index'])->name('index')->middleware('permission:admin.management.price.index,api');
+            Route::post('/{factory}', [FactoryPriceController::class, 'store'])->name('savePrice')->middleware('permission:admin.management.price.savePrice,api');
+            Route::patch('/{price}', [FactoryPriceController::class, 'update']);
+
         });
     });
     Route::group(['prefix' => 'masterData', 'as' => 'masterData.'], function () {
@@ -100,7 +105,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         });
         Route::group(['prefix' => 'income', 'as' => 'income.'], function () {
             Route::get('', [OrderIncomeController::class, 'index'])->name('index')->middleware('permission:admin.transaction.income.index,api');
-            Route::post('', [OrderIncomeController::class, 'store'])->name('createIncome')->middleware('permission:admin.transaction.income.createIncome,api');
+            Route::post('{factory}', [OrderIncomeController::class, 'store'])->name('createIncome')->middleware('permission:admin.transaction.income.createIncome,api');
 
         });
     });

@@ -20,7 +20,7 @@ class RoleController extends Controller
     public function index(Request $request): RoleCollection
     {
         $role = Role::query()
-            ->whereNotIn('id', [1])
+            ->where('name', '<>', 'Administrator')
             ->when($request->name, function ($query, $name){
                 $query->where('name', 'like',  "%$name%");
             })

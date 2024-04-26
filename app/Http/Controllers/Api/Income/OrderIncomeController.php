@@ -7,42 +7,91 @@ use App\Http\Resources\Factory\FactoryResource;
 use App\Http\Resources\Order\DeliveryOrderCollection;
 use App\Models\Factory;
 use App\Models\Order;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class OrderIncomeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::query()
-            ->with(['factory'])
-            ->when($request->get('factory_id'), function ($query, $factoryId) {
-                $query->where('factory_id', $factoryId);
-            })
-            ->when($request->get('period_start'), function ($builder, $periodStart) {
-                $builder->whereDate('trade_date', '>=', $periodStart);
-            })
-            ->when($request->get('period_end'), function ($builder, $periodEnd) {
-                $builder->whereDate('trade_date', '<=', $periodEnd);
-            })
-            ->when($request->get('sortBy'), function ($query, $sort) {
-                $sortBy = collect(json_decode($sort));
-                return $query->orderBy($sortBy['key'], $sortBy['order']);
-            })
-            ->when(!$request->get('sortBy'), function ($query) {
-                return $query->orderByDesc('id');
-            })->get();
+        if ($request->get('factory_id') && $request->get('period_start') && $request->get('period_end')) {
+            $query = Order::query()
+                ->with(['factory', 'customer'])
+                ->whereNull('income_status')
+                ->when($request->get('factory_id'), function ($query, $factoryId) {
+                    $query->where('factory_id', $factoryId);
+                })
+                ->when($request->get('period_start'), function ($builder, $periodStart) {
+                    $builder->whereDate('trade_date', '>=', $periodStart);
+                })
+                ->when($request->get('period_end'), function ($builder, $periodEnd) {
+                    $builder->whereDate('trade_date', '<=', $periodEnd);
+                })
+                ->get();
 
+            return response()->json([
+                'order' => DeliveryOrderCollection::make($query),
+            ], 201);
+        } else {
+            $factories = Factory::query()->get();
+            return response()->json([
+                'factories' => FactoryResource::collection($factories),
+            ], 201);
+        }
 
-        $factories = Factory::query()->get();
-        return response()->json([
-            'order' => DeliveryOrderCollection::make($query),
-            'factories' => FactoryResource::collection($factories),
-        ], 201);
     }
 
-    public function store()
+    public function store(Factory $factory, Request $request)
     {
+        $validator = Validator::make($request->only([
+            'trade_date', 'period_start', 'period_end'
+        ]), [
+            'trade_date' => 'required|date|before_or_equal:' . Carbon::now()->toDateString(),
+            'period_start' => 'required|date|before_or_equal:period_end',
+            'period_end' => 'required|date',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
+        }
+
+        $orders = $factory->order()
+            ->whereNull('income_status')
+            ->whereDate('trade_date', '>=', $request->get('period_start'))
+            ->whereDate('trade_date', '<=', $request->get('period_end'));
+        DB::beginTransaction();
+        try {
+            if ($orders->exists()) {
+
+                $income = $factory->incomes()
+                    ->create([
+                        'period_start' => $request->get('period_start'),
+                        'period_end' => $request->get('period_end'),
+                        'trade_date' => $request->get('trade_date'),
+                        'user_id' => auth('api')->id()
+                    ]);
+
+                foreach ($orders->get() as $order) {
+                    $order->update([
+                        'income_status' => $income->trade_date
+                    ]);
+
+                    $income->details()->create([
+                        'order_id' => $order->id,
+                    ]);
+                }
+                DB::commit();
+                return response()->json(['status' => true], 201);
+
+            } else {
+                return response()->json(['status' => false, 'errors' => ['factory_id' => ['Factory in this period is no data']]], 422);
+            }
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            abort(403, $exception->getCode() . ' ' . $exception->getMessage());
+        }
     }
 }

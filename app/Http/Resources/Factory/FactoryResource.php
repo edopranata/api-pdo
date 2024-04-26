@@ -18,11 +18,11 @@ class FactoryResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'margin' => $this->margin,
-            'price' => $this->price,
             'ppn_tax' => $this->ppn_tax,
             'pph22_tax' => $this->pph22_tax,
             'created_by' => $this->whenLoaded('user', $this->user?->name),
             'created_at' => $this->created_at->format('d-m-Y H:i:s'),
+            'prices' => FactoryPriceResource::collection($this->whenLoaded('prices')),
         ];
     }
 }

@@ -30,4 +30,14 @@ class Factory extends Model
     {
         return $this->hasMany(Order::class);
     }
+
+    public function prices(): HasMany
+    {
+        return $this->hasMany(FactoryPrice::class);
+    }
+
+    public function incomes(): HasMany
+    {
+        return $this->hasMany(Income::class);
+    }
 }

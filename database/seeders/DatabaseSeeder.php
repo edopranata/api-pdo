@@ -60,14 +60,20 @@ class DatabaseSeeder extends Seeder
                 $as = str($action['as'])->lower();
                 if ($as->startsWith('admin') && !$as->endsWith('.')) {
                     $name = Str::replace('admin.', '', $action['as']);
-                    return [
-                        'method' => $method,
-                        'name' => $action['as'],
-                        'parent' => \str(collect(\str($name)->explode('.'))[0])->headline(),
-                        'children' => \str(collect(\str($name)->explode('.'))[1])->headline(),
-                        'title' => \str(collect(\str($name)->explode('.'))[2])->headline(),
-                        'path' => $route->uri
-                    ];
+                    $split = collect(\str($name)->explode('.'));
+                    if($split->count() >= 2){
+                        return [
+                            'method' => $method,
+                            'name' => $action['as'],
+                            'parent' => \str($split[0])->headline(),
+                            'children' => \str($split[1])->headline(),
+                            'title' => \str($split[2])->headline(),
+                            'path' => $route->uri
+                        ];
+                    }else{
+                        return null;
+                    }
+
                 }else {
                     return null;
                 }
@@ -75,6 +81,7 @@ class DatabaseSeeder extends Seeder
             ->filter(function ($value) {
                 return !is_null($value);
             });
+
 
         $role = Role::query()->first();
         foreach ($permissions as $item) {
@@ -101,7 +108,8 @@ class DatabaseSeeder extends Seeder
             MenuSeeder::class,
             CustomerSeeder::class,
             FactorySeeder::class,
-            CashSeeder::class
+            CashSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }

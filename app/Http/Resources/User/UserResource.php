@@ -20,7 +20,7 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if($request->routeIs('admin.management.users.index') || $request->routeIs('admin.management.cash.index')){
+        if($request->routeIs('admin.index') || $request->routeIs('admin.management.users.index') || $request->routeIs('admin.management.cash.index')){
             return [
                 'id'        => $this->id,
                 'name'      => $this->name,

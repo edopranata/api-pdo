@@ -17,7 +17,6 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->string('name');
             $table->double('margin')->default(0);
-            $table->double('price')->default(0);
             $table->double('ppn_tax')->default(0);
             $table->double('pph22_tax')->default(0);
             $table->softDeletes();
