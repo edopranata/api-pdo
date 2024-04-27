@@ -31,7 +31,7 @@ class FactorySeeder extends Seeder
                     $factory->prices()
                         ->create([
                             'date' => $period,
-                            'price' => fake()->randomElement([2100, 2200, 2300, 2400]) + fake()->randomElement([5,10,15,20.25,30,35,40,45,50]),
+                            'price' => (int) fake()->randomElement([2100, 2200, 2300, 2400]) + (int) fake()->randomElement([5,10,15,20.25,30,35,40,45,50]),
                         ]);
                 }
             });
