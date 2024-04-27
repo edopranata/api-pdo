@@ -13,6 +13,7 @@ use App\Models\Factory;
 use App\Models\FactoryPrice;
 use App\Models\Order;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +27,9 @@ class DeliveryOrderController extends Controller
     use OrderTrait;
     public function index(Request $request): JsonResponse
     {
-
+        $day = 30;
+        $now = now();
+        $periods = CarbonPeriod::create($now->subDays($day), now());
         if($request->get('limit') && $request->get('page')) {
             $deliveries = $this->getOrderTable($request);
             return response()->json([
@@ -43,12 +46,35 @@ class DeliveryOrderController extends Controller
             ], 201);
         }else{
             $customers = Customer::query()->with('loan')->get();
-            $factories = Factory::query()->with(['prices' => function ($builder) {
-                return $builder->latest('date')->take(30);
-            }])->get();
+            $factories = Factory::query()->with(['prices' => function ($builder) use ($periods) {
+                $builder->whereDate('date', '>=', $periods->first()->format('Y/m/d'))->orderBy('date', 'desc');
+            }])->get()->map(function ($factory) {
+                return [
+                    'id' => $factory->id,
+                    'name' => $factory->name,
+                    'margin' => $factory->margin,
+                    'ppn_tax' => $factory->ppn_tax,
+                    'pph22_tax' => $factory->pph22_tax,
+                    'events' => $factory->prices->pluck('date')->map(function ($date) {
+                        return Carbon::parse($date)->format('Y/m/d');
+                    }),
+                    'prices' => $factory->prices->map(function ($price) {
+                        return [
+                            'id' => $price->id,
+                            'date' => Carbon::create($price->date)->format('Y/m/d'),
+                            'price' => $price->price,
+                        ];
+                    }),
+                ];
+            });
+
+            $date = collect($periods->toArray())->map(function ($period) {
+                return Carbon::create($period)->format('Y/m/d');
+            });
             return response()->json([
                 'customers' => CustomerResource::collection($customers),
-                'factories' => FactoryResource::collection($factories)
+                'factories' => $factories,
+                'periods' => $date,
             ], 201);
         }
 

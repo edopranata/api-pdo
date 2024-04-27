@@ -13,6 +13,7 @@ trait OrderTrait
     {
         $query = Order::query()
             ->with(['customer', 'factory', 'user'])
+            ->whereNull('income_status')
             ->when($request->get('customer_id'), function ($query, $customerId) {
                 $query->where('customer_id', $customerId);
             })

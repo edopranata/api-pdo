@@ -17,17 +17,18 @@ class FactoryPriceController extends Controller
 {
     public function index(): JsonResponse
     {
-
-        $day = 20;
+        $day = 30;
         $now = now();
         $periods = CarbonPeriod::create($now->subDays($day), now());
         $factories = Factory::query()->with(['prices' => function ($builder) use ($periods) {
-            $builder->whereDate('date', '>=', $periods->first()->format('Y/m/d'));
+            $builder->whereDate('date', '>=', $periods->first()->format('Y/m/d'))->orderBy('date', 'desc');
         }])->get()->map(function ($factory) {
             return [
                 'id' => $factory->id,
                 'name' => $factory->name,
-                'event' => $factory->prices->pluck('date'),
+                'event' => $factory->prices->pluck('date')->map(function ($date) {
+                    return Carbon::parse($date)->format('Y/m/d');
+                }),
                 'price' => $factory->prices->map(function ($price) {
                     return [
                         'id' => $price->id,
