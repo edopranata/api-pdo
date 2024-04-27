@@ -16,9 +16,6 @@ class CustomerOrderCollection extends ResourceCollection
     {
         return [
             'data' => CustomerOrderResource::collection($this->collection->all()),
-            'meta' => [
-                'total' => collect($this->resource)['total']
-            ]
         ];
     }
 }
