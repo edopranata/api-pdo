@@ -9,7 +9,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
-class DatabaseSeeder extends Seeder
+class LocalSeeder extends Seeder
 {
     /**
      * Seed the application's database.
@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'name' => $administrator,
             'username' => \str($administrator)->lower(),
-            'email' => \str($administrator)->lower().'@admin.com',
+            'email' => \str($administrator)->lower() . '@admin.com',
         ]);
 
         $roles = [
@@ -32,22 +32,20 @@ class DatabaseSeeder extends Seeder
         foreach ($roles as $role) {
             Role::create(['name' => $role]);
 
-//            if($role === 'Cashier') {
-//                User::factory(rand(10, 20))->create()->each(function ($user) use ($role) {
-//                    $user->assignRole($role);
-//                });
+            if ($role === 'Cashier') {
+                User::factory(rand(10, 20))->create()->each(function ($user) use ($role) {
+                    $user->assignRole($role);
+                });
 
-//            }else{
+            } else {
                 $admin = User::factory()->create([
                     'name' => $role,
                     'username' => \str($role)->lower(),
-                    'email' => \str($role)->lower().'@admin.com',
+                    'email' => \str($role)->lower() . '@admin.com',
                 ]);
 
                 $admin->assignRole($role);
-//            }
-
-
+            }
 
         }
 
@@ -60,7 +58,7 @@ class DatabaseSeeder extends Seeder
                 if ($as->startsWith('admin') && !$as->endsWith('.')) {
                     $name = Str::replace('admin.', '', $action['as']);
                     $split = collect(\str($name)->explode('.'));
-                    if($split->count() >= 2){
+                    if ($split->count() >= 2) {
                         return [
                             'method' => $method,
                             'name' => $action['as'],
@@ -69,11 +67,11 @@ class DatabaseSeeder extends Seeder
                             'title' => \str($split[2])->headline(),
                             'path' => $route->uri
                         ];
-                    }else{
+                    } else {
                         return null;
                     }
 
-                }else {
+                } else {
                     return null;
                 }
             })
@@ -85,16 +83,16 @@ class DatabaseSeeder extends Seeder
         $role = Role::query()->first();
         foreach ($permissions as $item) {
             $permission = Permission::create([
-                'name'  => $item['name'],
+                'name' => $item['name'],
                 'parent' => $item['parent'],
                 'children' => $item['children'],
                 'title' => \str($item['title'])->replace('app', '')->trim()->ucfirst(),
-                'path'  => $item['path'],
-                'method'  => $item['method'],
+                'path' => $item['path'],
+                'method' => $item['method'],
             ]);
 
-            if(\str($permission->title)->lower() == 'index'){
-                $other_roles  = Role::query()->whereNotIn('id', [1])->inRandomOrder()->first();
+            if (\str($permission->title)->lower() == 'index') {
+                $other_roles = Role::query()->whereNotIn('id', [1])->inRandomOrder()->first();
                 $other_roles->givePermissionTo($permission->name);
             }
         }
@@ -105,10 +103,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             MenuSeeder::class,
-//            CustomerSeeder::class,
+            CustomerSeeder::class,
             FactorySeeder::class,
-//            CashSeeder::class,
-//            OrderSeeder::class,
+            CashSeeder::class,
+            OrderSeeder::class,
         ]);
     }
 }
