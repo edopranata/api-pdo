@@ -56,6 +56,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('/', [CashController::class, 'index'])->name('index')->middleware('permission:admin.management.cash.index,api');
             Route::post('/{user}/giveCash', [CashController::class, 'giveCash'])->name('giveCash')->middleware('permission:admin.management.cash.giveCash,api');
             Route::post('/{user}/takeCash', [CashController::class, 'takeCash'])->name('takeCash')->middleware('permission:admin.management.cash.takeCash,api');
+            Route::get('/{user}/details', [CashController::class, 'show'])->name('cashDetails')->middleware('permission:admin.management.cash.cashDetails,api');
         });
         Route::group(['prefix' => 'price', 'as' => 'price.'], function () {
             Route::get('/', [FactoryPriceController::class, 'index'])->name('index')->middleware('permission:admin.management.price.index,api');

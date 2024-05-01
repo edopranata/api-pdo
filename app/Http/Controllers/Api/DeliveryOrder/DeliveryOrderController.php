@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Api\DeliveryOrder;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Customer\CustomerResource;
-use App\Http\Resources\Factory\FactoryResource;
 use App\Http\Resources\Order\DeliveryOrderCollection;
 use App\Http\Resources\Order\DeliveryOrderResource;
 use App\Http\Traits\OrderTrait;
@@ -15,12 +14,10 @@ use App\Models\Order;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Closure;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 class DeliveryOrderController extends Controller
 {
@@ -88,15 +85,13 @@ class DeliveryOrderController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
-                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin', 'ppn_tax', 'pph22_tax'
+                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin'
             ]), [
                 'trade_date' => 'required|date|before_or_equal:' . Carbon::now()->toDateString(),
                 'customer_id' => 'required|exists:customers,id',
                 'net_weight' => 'required|numeric|min:1',
                 'net_price' => 'required|numeric|min:1',
                 'margin' => 'required|numeric|max:100|min:' . $margin,
-                'ppn_tax' => 'required|numeric|min:1|max:100',
-                'pph22_tax' => 'required|numeric|max:100',
             ]);
 
             if ($validator->fails()) {
@@ -116,10 +111,10 @@ class DeliveryOrderController extends Controller
                     'customer_price' => $customer_price,
                     'customer_total' => $customer_total,
                     'margin' => $request->get('margin'),
-                    'ppn_tax' => $request->get('ppn_tax'),
-                    'pph22_tax' => $request->get('pph22_tax'),
-                    'ppn_total' => $request->get('ppn'),
-                    'pph22_total' => $request->get('pph22'),
+                    'ppn_tax' => $request->get('ppn_tax') ?? 0,
+                    'pph22_tax' => $request->get('pph22_tax') ?? 0,
+                    'ppn_total' => $request->get('ppn') ?? 0,
+                    'pph22_total' => $request->get('pph22') ?? 0,
                     'user_id' => auth('api')->id()
                 ]);
 
@@ -145,7 +140,7 @@ class DeliveryOrderController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
-                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin', 'ppn_tax', 'pph22_tax'
+                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin',
             ]), [
                 'trade_date' => 'required|date|before_or_equal:' . Carbon::now()->toDateString(),
                 'customer_id' => 'required|exists:customers,id',
@@ -158,9 +153,6 @@ class DeliveryOrderController extends Controller
                             $fail("Invalid margin");
                         }
                     }],
-
-                'ppn_tax' => 'required|numeric|min:1|max:100',
-                'pph22_tax' => 'required|numeric|max:100',
             ]);
 
             if ($validator->fails()) {
@@ -181,10 +173,10 @@ class DeliveryOrderController extends Controller
                 'customer_price' => $customer_price,
                 'customer_total' => $customer_total,
                 'margin' => $request->get('margin'),
-                'ppn_tax' => $request->get('ppn_tax'),
-                'pph22_tax' => $request->get('pph22_tax'),
-                'ppn_total' => $request->get('ppn'),
-                'pph22_total' => $request->get('pph22'),
+                'ppn_tax' => $request->get('ppn_tax') ?? 0,
+                'pph22_tax' => $request->get('pph22_tax') ?? 0,
+                'ppn_total' => $request->get('ppn') ?? 0,
+                'pph22_total' => $request->get('pph22') ?? 0,
             ]);
 
             DB::commit();

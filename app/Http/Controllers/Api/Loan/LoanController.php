@@ -8,7 +8,6 @@ use App\Http\Resources\Report\InvoiceDataResource;
 use App\Http\Traits\CashTrait;
 use App\Http\Traits\InvoiceTrait;
 use App\Models\Customer;
-use App\Models\Invoice;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +17,7 @@ class LoanController extends Controller
 {
     use InvoiceTrait, CashTrait;
 
-    public function index(Request $request)
+    public function index(Request $request): CustomerCollection
     {
         $query = Customer::query()
             ->with('loan')
@@ -125,7 +124,7 @@ class LoanController extends Controller
                 ]);
             }
 
-            $this->decrementCash($request->balance, $trade_date, $invoice);
+            $this->decrementCash($request->balance, $trade_date,  "Pinjaman $customer->name", $invoice);
 
             DB::commit();
 
@@ -187,7 +186,7 @@ class LoanController extends Controller
                     'loan_detail_id' => $details->id
                 ]);
 
-                $this->incrementCash($request->balance, $trade_date, $invoice);
+                $this->incrementCash($request->balance, $trade_date, "Angsuran Pinjaman $customer->name", $invoice);
 
             } else {
                 return response()->json(['status' => false, 'errors' => ['balance' => ['Customer has no loan']]], 422);

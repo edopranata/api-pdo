@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\Cash;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Cash\CashCollection;
+use App\Http\Resources\Cash\CashDetailCollection;
+use App\Http\Resources\Cash\CashResource;
+use App\Http\Resources\User\UserResource;
 use App\Models\Cash;
-use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +40,28 @@ class CashController extends Controller
         return new CashCollection($data);
     }
 
+    public function show(User $user, Request $request)
+    {
+        $cash = $user->cash()->first();
+        $query = $cash->details()->when($request->get('search'), function ($query, $search) {
+            return $query->where('name', 'LIKE', "%$search%");
+        })
+            ->when($request->get('search'), function ($query, $search) {
+                return $query->orWhere('username', 'LIKE', "%$search%");
+            })
+            ->when($request->get('search'), function ($query, $search) {
+                return $query->orWhere('email', 'LIKE', "%$search%");
+            })->orderBy('created_at', 'desc');
+
+        $data = $query->paginate($request->get('limit', 10));
+
+        return response()->json([
+            'details' => new CashDetailCollection($data),
+            'user' => new UserResource($user),
+            'cash' => new CashResource($cash),
+        ]);
+    }
+
     public function giveCash(User $user, Request $request)
     {
 
@@ -55,11 +79,15 @@ class CashController extends Controller
             return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
 
+
+        $description = $request->get('description') ?? 'Tambahan Kas';
+
         DB::beginTransaction();
         try {
             if ($cash->exists()) {
                 $details->details()->create([
                     'balance' => $request->balance,
+                    'description' => $description,
                     'opening_balance' => $details->balance,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
@@ -76,6 +104,7 @@ class CashController extends Controller
 
                 $details->details()->create([
                     'balance' => $request->balance,
+                    'description' => $description,
                     'opening_balance' => 0,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
@@ -102,6 +131,7 @@ class CashController extends Controller
         if ($validator->fails()) {
             return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
         }
+        $description = $request->get('description') ?? 'Setoran Kas';
 
         DB::beginTransaction();
         try {
@@ -110,6 +140,7 @@ class CashController extends Controller
                 $details->details()->create([
                     'balance' => $request->balance * -1,
                     'opening_balance' => $details->balance,
+                    'description' => $description,
                     'trade_date' => now(),
                     'user_id' => auth('api')->id()
                 ]);

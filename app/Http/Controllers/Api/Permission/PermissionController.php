@@ -66,14 +66,27 @@ class PermissionController extends Controller
                 $method = collect($route->methods)->first();
                 $as = str($action['as'])->lower();
                 $name = str($action['as'])->replace('admin.', '');
-                return ($as->startsWith('admin') && !$as->endsWith('.')) ? [
-                    'method' => $method,
-                    'name' => $action['as'],
-                    'parent' => \str(collect(\str($name)->explode('.'))[0])->headline(),
-                    'children' => \str(collect(\str($name)->explode('.'))[1])->headline(),
-                    'title' => \str(collect(\str($name)->explode('.'))[2])->headline(),
-                    'path' => $route->uri
-                ] : null;
+                $split = collect(\str($name)->explode('.'));
+                if($split->count() >= 2){
+                    return ($as->startsWith('admin') && !$as->endsWith('.')) ? [
+                        'method' => $method,
+                        'name' => $action['as'],
+                        'parent' => \str($split[0])->headline(),
+                        'children' => \str($split[1])->headline(),
+                        'title' => \str($split[2])->headline(),
+                        'path' => $route->uri
+                    ] : null;
+                }else{
+                    return null;
+                }
+//                return ($as->startsWith('admin') && !$as->endsWith('.')) ? [
+//                    'method' => $method,
+//                    'name' => $action['as'],
+//                    'parent' => \str(collect(\str($name)->explode('.'))[0])->headline(),
+//                    'children' => \str(collect(\str($name)->explode('.'))[1])->headline(),
+//                    'title' => \str(collect(\str($name)->explode('.'))[2])->headline(),
+//                    'path' => $route->uri
+//                ] : null;
             })
             ->filter(function ($value) {
                 return !is_null($value);

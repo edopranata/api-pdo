@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 trait CashTrait
 {
 
-    private function incrementCash($amount, $trade_date, $invoice = null): void
+    private function incrementCash($amount, $trade_date, $description = null, $invoice = null): void
     {
         $cash = auth('api')->user()->cash();
         DB::beginTransaction();
@@ -20,6 +20,7 @@ trait CashTrait
                     'balance' => $amount,
                     'transaction_type' => $invoice ? get_class(new Invoice()) : null,
                     'transaction_id' => $invoice ? $invoice->id : null,
+                    'description' => $description,
                     'opening_balance' => $details->balance,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
@@ -38,6 +39,7 @@ trait CashTrait
                     'balance' => $amount,
                     'transaction_type' => $invoice ? get_class(new Invoice()) : null,
                     'transaction_id' => $invoice ? $invoice->id : null,
+                    'description' => $description,
                     'opening_balance' => 0,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
@@ -53,7 +55,7 @@ trait CashTrait
 
     }
 
-    private function decrementCash($amount, $trade_date, $invoice = null): void
+    private function decrementCash($amount, $trade_date, $description = null, $invoice = null): void
     {
         $cash = auth('api')->user()->cash();
         DB::beginTransaction();
@@ -64,6 +66,7 @@ trait CashTrait
                     'balance' => $amount * -1,
                     'transaction_type' => $invoice ? get_class(new Invoice()) : null,
                     'transaction_id' => $invoice ? $invoice->id : null,
+                    'description' => $description,
                     'opening_balance' => $details->balance,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
@@ -83,6 +86,7 @@ trait CashTrait
                     'balance' => $amount,
                     'transaction_type' => $invoice ? get_class(new Invoice()) : null,
                     'transaction_id' => $invoice ? $invoice->id : null,
+                    'description' => $description,
                     'opening_balance' => 0,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()

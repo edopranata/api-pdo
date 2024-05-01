@@ -85,7 +85,7 @@ class InvoiceController extends Controller
                         $cash = $cash ? max($cash, 0) : 0;
 
                         if ($value > $cash) {
-                            $fail("Cash {$attribute} is {$cash}.");
+                            $fail("Cash balance is {$cash}.");
                         }
                     }],
             ]);
@@ -102,7 +102,7 @@ class InvoiceController extends Controller
                         $cash = $cash ? max($cash, 0) : 0;
 
                         if ($value > $cash) {
-                            $fail("Cash {$attribute} is {$cash}.");
+                            $fail("Cash balance is {$cash}.");
                         }
                     }],
             ]);
@@ -153,7 +153,7 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            $this->decrementCash($total, $trade_date, $invoice);
+            $this->decrementCash($total, $trade_date, "Invoice DO $invoice->incoice_number", $invoice);
 
             if($installment > 0) {
 
