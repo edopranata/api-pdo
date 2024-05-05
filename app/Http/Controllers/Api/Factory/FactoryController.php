@@ -38,10 +38,9 @@ class FactoryController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
-                'name','margin'
+                'name'
             ]), [
                 'name' => 'required|string|min:3|max:30',
-                'margin' => 'required|integer|min:10'
             ]);
 
             if ($validator->fails()) {
@@ -51,7 +50,7 @@ class FactoryController extends Controller
             $factory = Factory::query()
                 ->create([
                     'name' => $request->name,
-                    'margin' => $request->margin,
+                    'margin' => $request->margin ?? 0,
                     'ppn_tax' => $request->ppn_tax,
                     'pph22_tax' => $request->pph22_tax,
                     'user_id' => auth('api')->id()
@@ -86,7 +85,7 @@ class FactoryController extends Controller
 
             $factory->update([
                 'name' => $request->name,
-                'margin' => $request->margin,
+                'margin' => $request->margin ?? 0,
                 'ppn_tax' => $request->ppn_tax,
                 'pph22_tax' => $request->pph22_tax,
                 'user_id' => auth()->id()

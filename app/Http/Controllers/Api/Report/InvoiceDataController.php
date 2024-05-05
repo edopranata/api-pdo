@@ -33,7 +33,7 @@ class InvoiceDataController extends Controller
         return new InvoiceDataCollection($invoices);
     }
 
-    public function show(Invoice $invoice)
+    public function show(Invoice $invoice): InvoiceDataResource
     {
         return InvoiceDataResource::make($invoice->load(['orders.factory', 'installment', 'customer']));
     }
