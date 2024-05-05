@@ -153,7 +153,7 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            $this->decrementCash($total, $trade_date, "Invoice DO $invoice->incoice_number", $invoice);
+            $this->decrementCash($total, $trade_date, "Invoice DO $invoice->invoice_number", $invoice);
 
             if($installment > 0) {
 
@@ -163,8 +163,9 @@ class InvoiceController extends Controller
                     // Add to loan details
                     $details = $loan->details()
                         ->create([
-                            'user_id' => auth()->id(),
+                            'user_id' => auth('api')->id(),
                             'trade_date' => $trade_date,
+                            'description' => "Potong DO #$invoice->invoice_number",
                             'opening_balance' => $loan->balance,
                             'balance' => $installment * -1
                         ]);

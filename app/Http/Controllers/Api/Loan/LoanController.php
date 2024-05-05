@@ -74,14 +74,12 @@ class LoanController extends Controller
             if ($loan->exists()) {
                 $details = $detail->details()->create([
                     'balance' => $request->balance,
+                    'description' => "Pinjaman #$invoice_number",
                     'opening_balance' => $detail->balance,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
                 ]);
 
-                $detail->update([
-                    'balance' => $detail->balance + $request->balance
-                ]);
 
                 $invoice = $customer->invoices()
                     ->create([
@@ -91,6 +89,10 @@ class LoanController extends Controller
                         'type' => $type,
                         'sequence' => $sequence,
                     ]);
+
+                $detail->update([
+                    'balance' => $detail->balance + $request->balance,
+                ]);
 
                 // Create Invoice Loan
                 $invoice->loan()->create([
@@ -104,6 +106,7 @@ class LoanController extends Controller
 
                 $details = $detail->details()->create([
                     'balance' => $request->balance,
+                    'description' => "Pinjaman #$invoice_number",
                     'opening_balance' => 0,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
@@ -163,6 +166,7 @@ class LoanController extends Controller
             if ($loan->exists()) {
                 $details = $detail->details()->create([
                     'balance' => $request->balance * -1,
+                    'description' => "Angsuran #$invoice_number",
                     'opening_balance' => $detail->balance,
                     'trade_date' => $trade_date,
                     'user_id' => auth('api')->id()
