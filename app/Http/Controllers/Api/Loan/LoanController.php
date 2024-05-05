@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Api\Loan;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Customer\CustomerCollection;
+use App\Http\Resources\Customer\CustomerResource;
+use App\Http\Resources\Loan\LoanDetailCollection;
+use App\Http\Resources\Loan\LoanResource;
 use App\Http\Resources\Report\InvoiceDataResource;
 use App\Http\Traits\CashTrait;
 use App\Http\Traits\InvoiceTrait;
@@ -38,6 +41,21 @@ class LoanController extends Controller
         $data = $query->paginate($request->get('limit', 10));
 
         return new CustomerCollection($data);
+    }
+
+    public function show(Customer $customer, Request $request)
+    {
+        $loan = $customer->loan()->first();
+        $query = $loan->details()
+            ->orderBy('created_at', 'desc');
+
+        $data = $query->paginate($request->get('limit', 10));
+
+        return response()->json([
+            'details' => new LoanDetailCollection($data),
+            'customer' => new CustomerResource($customer),
+            'loan' => $loan,
+        ]);
     }
 
     public function addLoan(Customer $customer, Request $request)
@@ -127,7 +145,7 @@ class LoanController extends Controller
                 ]);
             }
 
-            $this->decrementCash($request->balance, $trade_date,  "Pinjaman $customer->name", $invoice);
+            $this->decrementCash($request->balance, $trade_date, "Pinjaman $customer->name", $invoice);
 
             DB::commit();
 
@@ -146,7 +164,7 @@ class LoanController extends Controller
 
         $trade_date = now();
 
-        $balance =  $loan->exists() ? $detail->balance : 0;
+        $balance = $loan->exists() ? $detail->balance : 0;
         $validator = Validator::make($request->only([
             'balance',
         ]), [

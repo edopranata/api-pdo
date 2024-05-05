@@ -88,6 +88,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('/{customer}/addLoan', [LoanController::class, 'addLoan'])->name('addLoan')->middleware('permission:admin.transaction.loan.addLoan,api');
             Route::post('/{customer}/payLoan', [LoanController::class, 'payLoan'])->name('payLoan')->middleware('permission:admin.transaction.loan.payLoan,api');
             Route::get('/{invoice}', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.transaction.loan.print,api');
+            Route::get('/{customer}/details', [LoanController::class, 'show'])->name('loanDetails')->middleware('permission:admin.transaction.loan.loanDetails,api');
         });
 
         Route::group(['prefix' => 'order', 'as' => 'order.'], function () {
