@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\User;
 
+use App\Http\Resources\Cash\CashDetailCollection;
+use App\Http\Resources\Cash\CashDetailResource;
 use App\Http\Resources\Cash\CashResource;
 use App\Http\Resources\Menu\MenuResource;
 use App\Models\Cash;
@@ -20,31 +22,32 @@ class UserResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        if($request->routeIs('admin.index') || $request->routeIs('admin.management.users.index') || $request->routeIs('admin.management.cash.index')){
+        if ($request->routeIs('admin.report.*') || $request->routeIs('admin.index') || $request->routeIs('admin.test') || $request->routeIs('admin.management.users.index') || $request->routeIs('admin.management.cash.index')) {
             return [
-                'id'        => $this->id,
-                'name'      => $this->name,
-                'username'  => $this->username,
-                'email'     => $this->email,
-                'roles'     => $this->getRoleNames(),
-                'cash'      => new CashResource($this->whenLoaded('cash')),
-                'photo'     => $this->photo ?? Avatar::create($this->name)->toBase64(),
-                'created_at'=> $this->created_at->format('d-m-Y H:i:s'),
+                'id' => $this->id,
+                'name' => $this->name,
+                'username' => $this->username,
+                'email' => $this->email,
+                'roles' => $this->getRoleNames(),
+                'cash' => new CashResource($this->whenLoaded('cash')),
+                'mutations' => CashDetailResource::collection($this->whenLoaded('mutations')),
+                'photo' => $this->photo ?? Avatar::create($this->name)->toBase64(),
+                'created_at' => $this->created_at->format('d-m-Y H:i:s'),
             ];
-        }else{
+        } else {
             $permissions = $this->getAllPermissions();
 
             return [
-                'user'      => [
-                    'id'            => $this->id,
-                    'name'          => $this->name,
-                    'username'      => $this->username,
-                    'email'         => $this->email,
-                    'roles'     => $this->getRoleNames(),
-                    'photo_url'     => $this->photo_url ?? Avatar::create($this->name)->toBase64(),
+                'user' => [
+                    'id' => $this->id,
+                    'name' => $this->name,
+                    'username' => $this->username,
+                    'email' => $this->email,
+                    'roles' => $this->getRoleNames(),
+                    'photo_url' => $this->photo_url ?? Avatar::create($this->name)->toBase64(),
                 ],
-                'routes'        => $permissions->pluck('name'),
-                'menu'          => MenuResource::collection($this->getMenu($permissions))
+                'routes' => $permissions->pluck('name'),
+                'menu' => MenuResource::collection($this->getMenu($permissions))
 
             ];
         }

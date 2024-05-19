@@ -153,7 +153,7 @@ class InvoiceController extends Controller
                 ]);
             }
 
-            $this->decrementCash($total, $trade_date, "Invoice DO $invoice->invoice_number", $invoice);
+            $this->decrementCash($total, $trade_date, "INV#$invoice_number DO $customer->name", $invoice);
 
             if($installment > 0) {
 

@@ -16,9 +16,7 @@ class InvoiceDataCollection extends ResourceCollection
     {
         return [
             'data' => InvoiceDataResource::collection($this->collection->all()),
-            'meta' => [
-                'total' => collect($this->resource)['total']
-            ]
         ];
+
     }
 }

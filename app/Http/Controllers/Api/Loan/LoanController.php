@@ -46,16 +46,33 @@ class LoanController extends Controller
     public function show(Customer $customer, Request $request)
     {
         $loan = $customer->loan()->first();
-        $query = $loan->details()
-            ->orderBy('created_at', 'desc');
 
-        $data = $query->paginate($request->get('limit', 10));
+        if($loan){
+            $query = $loan->details()
+                ->orderBy('created_at', 'desc');
 
-        return response()->json([
-            'details' => new LoanDetailCollection($data),
-            'customer' => new CustomerResource($customer),
-            'loan' => $loan,
-        ]);
+            $data = $query->paginate($request->get('limit', 10));
+
+            return response()->json([
+                'details' => new LoanDetailCollection($data),
+                'customer' => new CustomerResource($customer),
+                'loan' => $loan,
+            ]);
+        }else{
+            return response()->json([
+                'details' => [
+                    'data' => [],
+                    'meta' => [
+                        'total' => 0
+                    ]
+                ],
+                'customer' => new CustomerResource($customer),
+                'loan' => [
+                    'balance' => 0
+                ],
+            ]);
+        }
+
     }
 
     public function addLoan(Customer $customer, Request $request)
@@ -145,7 +162,7 @@ class LoanController extends Controller
                 ]);
             }
 
-            $this->decrementCash($request->balance, $trade_date, "Pinjaman $customer->name", $invoice);
+            $this->decrementCash($request->balance, $trade_date, "INV#$invoice_number Pinjaman $customer->name", $invoice);
 
             DB::commit();
 
@@ -208,7 +225,7 @@ class LoanController extends Controller
                     'loan_detail_id' => $details->id
                 ]);
 
-                $this->incrementCash($request->balance, $trade_date, "Angsuran Pinjaman $customer->name", $invoice);
+                $this->incrementCash($request->balance, $trade_date, "INV#$invoice_number Angsuran $customer->name", $invoice);
 
             } else {
                 return response()->json(['status' => false, 'errors' => ['balance' => ['Customer has no loan']]], 422);

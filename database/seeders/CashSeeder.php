@@ -22,6 +22,7 @@ class CashSeeder extends Seeder
             $cash->details()->create([
                 'user_id' => $user->id,
                 'trade_date' => now(),
+                'description' => 'Kas pagi',
                 'opening_balance' => 0,
                 'balance' => $balance,
             ]);

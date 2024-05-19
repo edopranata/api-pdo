@@ -18,14 +18,15 @@ class DeliveryOrderCollection extends ResourceCollection
         return [
             'data' => DeliveryOrderResource::collection($this->collection->all()),
             'meta' => [
-                'total' => $meta->has('total') ? (int) $meta->get('total') : 0,
+                'total' => $meta->has('total') ? (int) $meta->get('total') : null,
             ],
             'orders' => [
+                'gross_total' => $this->collection->sum('gross_total'),
                 'ppn_total' => $this->collection->sum('ppn_total'),
                 'pph22_total' => $this->collection->sum('pph22_total'),
-                'gross_total' => $this->collection->sum('gross_total'),
                 'gross_ppn_total' => $this->collection->sum('gross_total') + $this->collection->sum('ppn_total'),
                 'total' => ($this->collection->sum('gross_total') + $this->collection->sum('ppn_total')) - $this->collection->sum('pph22_total'),
+                'margin_income' => $this->collection->sum('net_total'),
             ]
         ];
     }

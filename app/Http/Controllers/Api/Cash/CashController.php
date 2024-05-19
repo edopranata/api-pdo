@@ -43,23 +43,34 @@ class CashController extends Controller
     public function show(User $user, Request $request)
     {
         $cash = $user->cash()->first();
-        $query = $cash->details()->when($request->get('search'), function ($query, $search) {
-            return $query->where('name', 'LIKE', "%$search%");
-        })
-            ->when($request->get('search'), function ($query, $search) {
-                return $query->orWhere('username', 'LIKE', "%$search%");
+        if($cash){
+            $query = $cash->details()->when($request->get('search'), function ($query, $search) {
+                return $query->where('name', 'LIKE', "%$search%");
             })
-            ->when($request->get('search'), function ($query, $search) {
-                return $query->orWhere('email', 'LIKE', "%$search%");
-            })->orderBy('created_at', 'desc');
+                ->when($request->get('search'), function ($query, $search) {
+                    return $query->orWhere('username', 'LIKE', "%$search%");
+                })
+                ->when($request->get('search'), function ($query, $search) {
+                    return $query->orWhere('email', 'LIKE', "%$search%");
+                })->orderBy('created_at', 'desc');
 
-        $data = $query->paginate($request->get('limit', 10));
+            $data = $query->paginate($request->get('limit', 10));
 
-        return response()->json([
-            'details' => new CashDetailCollection($data),
-            'user' => new UserResource($user),
-            'cash' => new CashResource($cash),
-        ]);
+            return response()->json([
+                'details' => new CashDetailCollection($data),
+                'user' => new UserResource($user),
+                'cash' => new CashResource($cash),
+            ]);
+        }else{
+            return response()->json([
+                'details' => [],
+                'user' => new UserResource($user),
+                'cash' => [
+                    'balance' => 0
+                ],
+            ]);
+        }
+
     }
 
     public function giveCash(User $user, Request $request)
@@ -110,7 +121,11 @@ class CashController extends Controller
                     'user_id' => auth('api')->id()
                 ]);
             }
+
             DB::commit();
+            return response()->json([
+                'status' => true,
+            ], 201);
         } catch (\Exception $exception) {
             DB::rollBack();
             abort(403, $exception->getCode() . ' ' . $exception->getMessage());
@@ -152,6 +167,9 @@ class CashController extends Controller
                 return response()->json(['status' => false, 'errors' => ['balance' => ['User has no balance']]], 422);
             }
             DB::commit();
+            return response()->json([
+                'status' => true,
+            ], 201);
         } catch (\Exception $exception) {
             DB::rollBack();
             abort(403, $exception->getCode() . ' ' . $exception->getMessage());

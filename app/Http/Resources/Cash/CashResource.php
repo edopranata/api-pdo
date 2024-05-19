@@ -19,7 +19,7 @@ class CashResource extends JsonResource
             'id' => $this->id,
             'balance' => $this->balance,
             'user' => new UserResource($this->whenLoaded('user')),
-
+            'details' => CashDetailResource::collection($this->whenLoaded('details')),
         ];
     }
 }

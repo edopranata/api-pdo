@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\Api\User\UserInfoController;
 use App\Http\Controllers\Api\User\UserLoginController;
 use App\Http\Controllers\Api\User\UserLogoutController;
+use App\Http\Controllers\Report\ReportCashController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->post('user', UserInfoController::class);
@@ -28,6 +29,7 @@ Route::post('login', UserLoginController::class);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::post('/', [DashboardController::class, 'index'])->name('index');
+    Route::post('/test', [BlankController::class, 'test'])->name('test');
     Route::group(['prefix' => 'management', 'as' => 'management.'], function () {
         Route::group(['prefix' => 'users', 'as' => 'users.'], function () {
             Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:admin.management.users.index,api');
@@ -112,12 +114,24 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         });
     });
     Route::group(['prefix' => 'report', 'as' => 'report.'], function () {
-        Route::group(['prefix' => 'invoiceData', 'as' => 'invoiceData.'], function () {
-            Route::get('', [InvoiceDataController::class, 'index'])->name('index')->middleware('permission:admin.report.invoiceData.index,api');
-            Route::get('{invoice}', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.report.invoiceData.print,api');
+        Route::group(['prefix' => 'invoiceReport', 'as' => 'invoiceReport.'], function () {
+            Route::get('', [InvoiceDataController::class, 'index'])->name('index')->middleware('permission:admin.report.invoiceReport.index,api');
+            Route::get('{invoice}', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.report.invoiceReport.print,api');
         });
-        Route::group(['prefix' => 'deliveryOrder', 'as' => 'deliveryOrder.'], function () {
-            Route::get('', [ReportDeliveryOrderController::class, 'index'])->name('index')->middleware('permission:admin.report.deliveryOrder.index,api');
+        Route::group(['prefix' => 'DOReport', 'as' => 'DOReport.'], function () {
+            Route::get('', [ReportDeliveryOrderController::class, 'index'])->name('index')->middleware('permission:admin.report.DOReport.index,api');
+            Route::get('{factory}', [ReportDeliveryOrderController::class, 'show'])->name('print')->middleware('permission:admin.report.DOReport.print,api');
+        });
+
+        Route::group(['prefix' => 'cashReport', 'as' => 'cashReport.'], function () {
+            Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.cashReport.index,api');
+            Route::get('dailyCash', [ReportCashController::class, 'show'])->name('dailyCash')->middleware('permission:admin.report.cashReport.dailyCash,api');
+            Route::get('todayCash', [ReportCashController::class, 'show'])->name('todayCash')->middleware('permission:admin.report.cashReport.todayCash,api');
+
+        });
+
+        Route::group(['prefix' => 'transactionReport', 'as' => 'transactionReport.'], function () {
+            Route::get('', [ReportCashController::class, 'index'])->name('index')->middleware('permission:admin.report.transactions.index,api');
         });
     });
 })->middleware('auth:sanctum');
