@@ -7,7 +7,6 @@ use App\Http\Resources\Cash\CashCollection;
 use App\Http\Resources\Cash\CashDetailCollection;
 use App\Http\Resources\Cash\CashResource;
 use App\Http\Resources\User\UserResource;
-use App\Models\Cash;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

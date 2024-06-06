@@ -25,16 +25,11 @@ class BlankController extends Controller
 
     public function test(): JsonResponse
     {
-        $user = User::query()->find('9be89d31-ba5c-42fa-8bdc-4f73ad3346fc');
-        $cash = $user->cash()
-            ->whereRelation('details', function (Builder $builder) {
-                $builder->whereDate('trade_date', Carbon::today()->subDays(40));
-            })
-            ->with(['details.transaction.customer','details.transaction.orders', 'details.transaction.loan'])
+        $cash = User::query()->where('id','9c06500e-2141-4ecc-9b99-70e69875047a')->with(['invoices'])
             ->first();
 
         return response()->json([
-            'user'  => UserResource::make($user),
+//            'user' => UserResource::make($user),
             'cash' => $cash ? CashResource::make($cash) : null,
         ], 201);
     }

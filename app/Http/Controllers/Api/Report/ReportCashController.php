@@ -1,11 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Report;
+namespace App\Http\Controllers\Api\Report;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\User\UserCollection;
 use App\Http\Resources\User\UserResource;
-use App\Models\Cash;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;

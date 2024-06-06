@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Factory;
 
+use App\Http\Resources\Order\DeliveryOrderResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,6 +24,7 @@ class FactoryResource extends JsonResource
             'created_by' => $this->whenLoaded('user', $this->user?->name),
             'created_at' => $this->created_at->format('d-m-Y H:i:s'),
             'prices' => FactoryPriceResource::collection($this->whenLoaded('prices')),
+            'order' => DeliveryOrderResource::collection($this->whenLoaded('order')),
         ];
     }
 }

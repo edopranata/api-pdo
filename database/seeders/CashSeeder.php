@@ -14,7 +14,7 @@ class CashSeeder extends Seeder
     {
         $users = User::role('Cashier')->inRandomOrder()->limit(3)->get();
         foreach ($users as $user) {
-            $balance = fake()->randomElement([500000000, 556000000, 686000000, 700000000, ]);
+            $balance = fake()->randomElement([5000000000, 5560000000, 6860000000, 7000000000, ]);
             $cash = $user->cash()->create([
                 'balance' => $balance,
             ]);

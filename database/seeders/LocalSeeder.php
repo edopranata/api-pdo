@@ -107,6 +107,7 @@ class LocalSeeder extends Seeder
             FactorySeeder::class,
             CashSeeder::class,
             OrderSeeder::class,
+            InvoiceSeeder::class,
         ]);
     }
 }

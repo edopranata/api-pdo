@@ -8,6 +8,7 @@ use App\Http\Resources\Order\DeliveryOrderCollection;
 use App\Models\Factory;
 use App\Models\Order;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -36,9 +37,29 @@ class OrderIncomeController extends Controller
                 'order' => DeliveryOrderCollection::make($query),
             ], 201);
         } else {
-            $factories = Factory::query()->get();
+            $factories = Factory::query()
+                ->with(['order' => function ($query) {
+                    return $query->whereNull('income_status');
+                }])
+
+                ->get()->map(function ($factory) {
+                    return [
+                        'id' => $factory->id,
+                        'name' => $factory->name,
+                        'order' => [
+                            'min' => $factory->order->count() > 0 ? $factory->order->min('trade_date')->format('Y/m/d') : null,
+                            'max' => $factory->order->count() > 0 ? $factory->order->max('trade_date')->format('Y/m/d') : null,
+                            'period' => $factory->order->count() > 0 ? collect(CarbonPeriod::create($factory->order->min('trade_date'), $factory->order->max('trade_date'))->toArray())->map(function ($date) {
+                                return Carbon::parse($date)->format('Y/m/d');
+                            }) : null,
+                            'income_period' => $factory->order->count() > 0 ? collect(CarbonPeriod::create($factory->order->min('trade_date'), now())->toArray())->map(function ($date) {
+                                return Carbon::parse($date)->format('Y/m/d');
+                            }) : null,
+                        ],
+                    ];
+                });
             return response()->json([
-                'factories' => FactoryResource::collection($factories),
+                'factories' => $factories,
             ], 201);
         }
 

@@ -18,7 +18,7 @@ class OrderSeeder extends Seeder
     {
 
         $factory = Factory::query()->with(['prices' => function ($query) {
-            return $query->orderBy('date', 'asc')->orderBy('date', 'desc')->take(10);
+            return $query->orderBy('date', 'desc')->take(10);
         }])->inRandomOrder()->first();
 
         foreach ($factory->prices as $price) {

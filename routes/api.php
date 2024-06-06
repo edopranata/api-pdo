@@ -12,14 +12,15 @@ use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
 use App\Http\Controllers\Api\Price\FactoryPriceController;
 use App\Http\Controllers\Api\Report\InvoiceDataController;
+use App\Http\Controllers\Api\Report\ReportCashController;
 use App\Http\Controllers\Api\Report\ReportDeliveryOrderController;
+use App\Http\Controllers\Api\Report\TransactionReportController;
 use App\Http\Controllers\Api\Role\RoleController;
 use App\Http\Controllers\Api\User\UserChangePasswordController;
 use App\Http\Controllers\Api\User\UserController;
 use App\Http\Controllers\Api\User\UserInfoController;
 use App\Http\Controllers\Api\User\UserLoginController;
 use App\Http\Controllers\Api\User\UserLogoutController;
-use App\Http\Controllers\Report\ReportCashController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->post('user', UserInfoController::class);
@@ -131,7 +132,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         });
 
         Route::group(['prefix' => 'transactionReport', 'as' => 'transactionReport.'], function () {
-            Route::get('', [ReportCashController::class, 'index'])->name('index')->middleware('permission:admin.report.transactions.index,api');
+            Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.transactionReport.index,api');
+            Route::get('dailyTransaction', [TransactionReportController::class, 'show'])->name('dailyTransaction')->middleware('permission:admin.report.transactionReport.dailyTransaction,api');
+            Route::get('todayTransaction', [TransactionReportController::class, 'show'])->name('todayTransaction')->middleware('permission:admin.report.transactionReport.todayTransaction,api');
+
         });
     });
 })->middleware('auth:sanctum');

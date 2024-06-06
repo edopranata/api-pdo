@@ -6,6 +6,7 @@ use App\Http\Resources\Cash\CashDetailCollection;
 use App\Http\Resources\Cash\CashDetailResource;
 use App\Http\Resources\Cash\CashResource;
 use App\Http\Resources\Menu\MenuResource;
+use App\Http\Resources\Report\InvoiceDataResource;
 use App\Models\Cash;
 use App\Models\Menu;
 use Illuminate\Http\Request;
@@ -31,6 +32,7 @@ class UserResource extends JsonResource
                 'roles' => $this->getRoleNames(),
                 'cash' => new CashResource($this->whenLoaded('cash')),
                 'mutations' => CashDetailResource::collection($this->whenLoaded('mutations')),
+                'invoice' => InvoiceDataResource::collection($this->whenLoaded('invoices')),
                 'photo' => $this->photo ?? Avatar::create($this->name)->toBase64(),
                 'created_at' => $this->created_at->format('d-m-Y H:i:s'),
             ];
