@@ -21,6 +21,9 @@ class DeliveryOrderCollection extends ResourceCollection
                 'total' => $meta->has('total') ? (int) $meta->get('total') : null,
             ],
             'orders' => [
+                'customer_price' => $this->collection->avg('customer_price'),
+                'customer_total' => $this->collection->sum('customer_total'),
+                'margin' => $this->collection->avg('margin'),
                 'gross_total' => $this->collection->sum('gross_total'),
                 'total_weight' => $this->collection->sum('net_weight'),
                 'ppn_total' => $this->collection->sum('ppn_total'),

@@ -26,7 +26,7 @@ class ReportDeliveryOrderController extends Controller
         ], 201);
     }
 
-    public function show(Factory $factory, Request $request)
+    public function show(Factory $factory, Request $request): JsonResponse
     {
         $validator = Validator::make($request->only([
             'start_date', 'end_date'
@@ -42,7 +42,6 @@ class ReportDeliveryOrderController extends Controller
                 ->with(['customer'])
                 ->whereDate('trade_date', '>=', $request->get('start_date'))
                 ->whereDate('trade_date', '<=', $request->get('end_date'))
-                ->whereNull('income_status')
                 ->get();
             return response()->json([
                 'orders' => DeliveryOrderCollection::make($orders),
