@@ -22,6 +22,7 @@ class DeliveryOrderCollection extends ResourceCollection
             ],
             'orders' => [
                 'gross_total' => $this->collection->sum('gross_total'),
+                'total_weight' => $this->collection->sum('net_weight'),
                 'ppn_total' => $this->collection->sum('ppn_total'),
                 'pph22_total' => $this->collection->sum('pph22_total'),
                 'gross_ppn_total' => $this->collection->sum('gross_total') + $this->collection->sum('ppn_total'),
