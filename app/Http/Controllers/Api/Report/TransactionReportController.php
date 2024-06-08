@@ -7,11 +7,12 @@ use App\Http\Resources\User\UserResource;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class TransactionReportController extends Controller
 {
 
-    public function show(Request $request)
+    public function show(Request $request): AnonymousResourceCollection|UserResource
     {
 
         if ($request->has('user_id')) {

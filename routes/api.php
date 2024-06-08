@@ -30,7 +30,6 @@ Route::post('login', UserLoginController::class);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::post('/', [DashboardController::class, 'index'])->name('index');
-    Route::post('/test', [BlankController::class, 'test'])->name('test');
     Route::group(['prefix' => 'management', 'as' => 'management.'], function () {
         Route::group(['prefix' => 'users', 'as' => 'users.'], function () {
             Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:admin.management.users.index,api');
@@ -122,6 +121,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         Route::group(['prefix' => 'DOReport', 'as' => 'DOReport.'], function () {
             Route::get('', [ReportDeliveryOrderController::class, 'index'])->name('index')->middleware('permission:admin.report.DOReport.index,api');
             Route::get('{factory}', [ReportDeliveryOrderController::class, 'show'])->name('print')->middleware('permission:admin.report.DOReport.print,api');
+            Route::post('{factory}', [ReportDeliveryOrderController::class, 'export'])->name('export')->middleware('permission:admin.report.DOReport.export,api');
         });
 
         Route::group(['prefix' => 'cashReport', 'as' => 'cashReport.'], function () {
@@ -139,4 +139,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
         });
     });
 })->middleware('auth:sanctum');
+
+
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Report;
 
+use App\Exports\Transaction\TransactionExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Factory\FactoryCollection;
 use App\Http\Resources\Factory\FactoryResource;
@@ -13,6 +14,8 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportDeliveryOrderController extends Controller
 {
@@ -24,6 +27,11 @@ class ReportDeliveryOrderController extends Controller
         return response()->json([
             'factories' => FactoryResource::collection($factory),
         ], 201);
+    }
+
+    public function export(Factory $factory, Request $request)
+    {
+        return Excel::download(new TransactionExport($factory), $request->get('file_name') ?? 'filename.xlsx');
     }
 
     public function show(Factory $factory, Request $request): JsonResponse
