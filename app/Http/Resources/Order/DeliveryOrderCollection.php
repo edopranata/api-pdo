@@ -23,6 +23,7 @@ class DeliveryOrderCollection extends ResourceCollection
             'orders' => [
                 'customer_price' => $this->collection->avg('customer_price'),
                 'customer_total' => $this->collection->sum('customer_total'),
+                'factory_price' => $this->collection->avg('net_price'),
                 'margin' => $this->collection->avg('margin'),
                 'gross_total' => $this->collection->sum('gross_total'),
                 'total_weight' => $this->collection->sum('net_weight'),

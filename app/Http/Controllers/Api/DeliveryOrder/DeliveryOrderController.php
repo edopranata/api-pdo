@@ -159,7 +159,7 @@ class DeliveryOrderController extends Controller
                 return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
             }
 
-            $customer_price = $request->get('net_price') - $request->get('margin');
+            $customer_price = $request->get('customer_price');
             $customer_total = $customer_price * $request->get('net_weight');
 
             $order->update([
