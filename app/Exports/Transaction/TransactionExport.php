@@ -24,6 +24,8 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Worksheet\Table;
+use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuery, WithColumnWidths, WithHeadings, WithMapping, WithCustomStartCell, WithColumnFormatting, WithStyles
@@ -57,7 +59,7 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
         return [
             'A' => NumberFormat::FORMAT_NUMBER,
             'B' => NumberFormat::FORMAT_DATE_DDMMYYYY,
-            'D' => NumberFormat::FORMAT_NUMBER,
+            'D' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'F' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'G' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
@@ -136,6 +138,44 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
                 $event->sheet->cellValue('B2', 'REPORT DO ' . str($this->factory->name)->upper());
                 $event->sheet->cellValue('B3', 'PERIOD DATE ' . Carbon::create(request()->get('start_date'))->format('Y-m-d') . ' - ' . Carbon::create(request()->get('end_date'))->format('Y-m-d'));
 
+                $row = $this->query()->get();
+
+                $table = new Table();
+                $table->setName('table_do');
+                $table->setShowTotalsRow(true);
+
+                $table->setRange('A6:K' . $row->count() + 7);
+                $table->getColumn('C')->setTotalsRowLabel('Total');
+                $table->getColumn('D')->setTotalsRowFunction('sum');
+                $table->getColumn('E')->setTotalsRowFunction('average');
+                $table->getColumn('F')->setTotalsRowFunction('sum');
+                $table->getColumn('G')->setTotalsRowFunction('average');
+                $table->getColumn('H')->setTotalsRowFunction('sum');
+                $table->getColumn('I')->setTotalsRowFunction('sum');
+                $table->getColumn('J')->setTotalsRowFunction('sum');
+                $table->getColumn('K')->setTotalsRowFunction('sum');
+
+                $event->getSheet()->getCell('C' . $row->count() + 7)->setValue( 'Total');
+                $event->getSheet()->getCell('D' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[NET WEIGHT])');
+                $event->getSheet()->getCell('E' . $row->count() + 7)->setValue( '=SUBTOTAL(101,table_do[NET PRICE])');
+                $event->getSheet()->getCell('F' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[CUSTOMER TOTAL])');
+                $event->getSheet()->getCell('G' . $row->count() + 7)->setValue( '=SUBTOTAL(101,table_do[MARGIN])');
+                $event->getSheet()->getCell('H' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[GROSS TOTAL])');
+                $event->getSheet()->getCell('I' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPN])');
+                $event->getSheet()->getCell('J' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPh22])');
+                $event->getSheet()->getCell('K' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[NET INCOME])');
+
+                $event->sheet->numberFormat('D' . $row->count() + 7 . ':L' . $row->count() + 7, NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+
+                $tableStyle = new TableStyle();
+                $tableStyle->setTheme(TableStyle::TABLE_STYLE_LIGHT1);
+                $tableStyle->setShowFirstColumn(true);
+                $tableStyle->setShowRowStripes(true);
+
+                $table->setStyle($tableStyle);
+
+                $event->sheet->addTable($table);
+
             }
         ];
     }
@@ -149,6 +189,8 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
         $sheet->getStyle('A6:K6')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
         $sheet->getStyle('D6:K6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+
+
     }
 
     public function drawings()
