@@ -68,6 +68,7 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
             'J' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'K' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'L' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
+            'M' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
         ];
     }
 
@@ -87,6 +88,7 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
                 $row->ppn_total,
                 $row->pph22_total,
                 $row->gross_total + $row->ppn_total - $row->pph22_total,
+                $row->gross_total - ($row->customer_total + $row->pph22_total),
             ],
         ];
     }
@@ -106,7 +108,8 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
                 'GROSS TOTAL',
                 'PPN',
                 'PPh22',
-                'NET INCOME'
+                'BANK TRANSFER',
+                'INCOME',
             ],
         ];
     }
@@ -131,6 +134,7 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
             'J' => 15,
             'K' => 15,
             'L' => 15,
+            'M' => 15,
         ];
     }
 
@@ -148,7 +152,7 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
                 $table->setName('table_do');
                 $table->setShowTotalsRow(true);
 
-                $table->setRange('A6:L' . $row->count() + 7);
+                $table->setRange('A6:M' . $row->count() + 7);
                 $table->getColumn('C')->setTotalsRowLabel('Total');
                 $table->getColumn('D')->setTotalsRowFunction('sum');
                 $table->getColumn('E')->setTotalsRowFunction('average');
@@ -159,6 +163,7 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
                 $table->getColumn('J')->setTotalsRowFunction('sum');
                 $table->getColumn('K')->setTotalsRowFunction('sum');
                 $table->getColumn('L')->setTotalsRowFunction('sum');
+                $table->getColumn('M')->setTotalsRowFunction('sum');
 
                 $event->getSheet()->getCell('C' . $row->count() + 7)->setValue( 'Total');
                 $event->getSheet()->getCell('D' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[NET WEIGHT])');
@@ -169,9 +174,10 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
                 $event->getSheet()->getCell('I' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[GROSS TOTAL])');
                 $event->getSheet()->getCell('J' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPN])');
                 $event->getSheet()->getCell('K' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPh22])');
-                $event->getSheet()->getCell('L' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[NET INCOME])');
+                $event->getSheet()->getCell('L' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[BANK TRANSFER])');
+                $event->getSheet()->getCell('M' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[INCOME])');
 
-                $event->sheet->numberFormat('D' . $row->count() + 7 . ':L' . $row->count() + 7, NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $event->sheet->numberFormat('D' . $row->count() + 7 . ':M' . $row->count() + 7, NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
                 $tableStyle = new TableStyle();
                 $tableStyle->setTheme(TableStyle::TABLE_STYLE_LIGHT1);
@@ -188,14 +194,14 @@ class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuer
 
     public function styles(Worksheet $sheet): void
     {
-        $sheet->getStyle('A4:L4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE);
+        $sheet->getStyle('A4:M4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE);
         $sheet->getStyle('D6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
-        $sheet->getStyle('A6:L6')->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A6:M6')->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
         $sheet->getStyle('A6:L6')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
         $sheet->getStyle('B6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('D6:L6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('D6:M6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
 
     }
