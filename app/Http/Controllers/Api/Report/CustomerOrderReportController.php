@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Report;
 use App\Exports\Customer\CustomerOrderReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Customer\CustomerCollection;
-use App\Http\Resources\Customer\CustomerOrderResource;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -42,10 +41,18 @@ class CustomerOrderReportController extends Controller
             ->withWhereHas('orders', function ($query) use ($date) {
                 $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
             })
-            ->withCount('orders')
-            ->withSum('orders', 'net_weight')
-            ->withAvg('orders', 'customer_price')
-            ->withSum('orders', 'customer_total')
+            ->withCount(['orders' => function ($query) use ($date) {
+                $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
+            }])
+            ->withSum(['orders' => function ($query) use ($date) {
+                $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
+            }], 'net_weight')
+            ->withAvg(['orders' => function ($query) use ($date) {
+                $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
+            }], 'customer_price')
+            ->withSum(['orders' => function ($query) use ($date) {
+                $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
+            }], 'customer_total')
             ->get();
 
         return new CustomerCollection($customer);
@@ -65,8 +72,7 @@ class CustomerOrderReportController extends Controller
 
         $monthly = str($request->get('monthly'))->split('#/#');
 
-
-        return Excel::download(new CustomerOrderReportExport($monthly), 'customer_order_' . $monthly[0] . $monthly[1] .'.xlsx');
+        return Excel::download(new CustomerOrderReportExport($monthly), 'customer_order_' . $monthly[0] . $monthly[1] . '.xlsx');
 
     }
 }

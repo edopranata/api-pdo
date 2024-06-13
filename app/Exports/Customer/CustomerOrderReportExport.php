@@ -31,8 +31,8 @@ class CustomerOrderReportExport  implements WithEvents, WithTitle, WithDrawings,
     protected int $year;
 
     public function __construct($date){
-        $this->year = $date[0];
-        $this->month = $date[1];
+        $this->year = (int) $date[0];
+        $this->month = (int) $date[1];
     }
     public function headings(): array
     {
@@ -144,10 +144,18 @@ class CustomerOrderReportExport  implements WithEvents, WithTitle, WithDrawings,
             ->withWhereHas('orders', function ($query) {
                 $query->whereMonth('trade_date', $this->month)->whereYear('trade_date', $this->year);
             })
-            ->withCount('orders')
-            ->withSum('orders', 'net_weight')
-            ->withAvg('orders', 'customer_price')
-            ->withSum('orders', 'customer_total');
+            ->withCount(['orders' => function ($query) {
+                $query->whereMonth('trade_date', $this->month)->whereYear('trade_date', $this->year);
+            }])
+            ->withSum(['orders' => function ($query) {
+                $query->whereMonth('trade_date', $this->month)->whereYear('trade_date', $this->year);
+            }], 'net_weight')
+            ->withAvg(['orders' => function ($query) {
+                $query->whereMonth('trade_date', $this->month)->whereYear('trade_date', $this->year);
+            }], 'customer_price')
+            ->withSum(['orders' => function ($query) {
+                $query->whereMonth('trade_date', $this->month)->whereYear('trade_date', $this->year);
+            }], 'customer_total');
     }
 
     public function columnFormats(): array
