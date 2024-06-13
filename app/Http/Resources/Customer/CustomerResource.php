@@ -24,7 +24,10 @@ class CustomerResource extends JsonResource
             'created_by' => $this->whenLoaded('user', $this->user?->name),
             'created_at' => $this->created_at->format('d-m-Y H:i:s'),
             'initial' => Avatar::create($this->name)->toBase64(),
-//            'orders' => DeliveryResource::collection($this->whenLoaded('orders'))
+            'orders_count' => $this->orders_count,
+            'total_weight' => $this->orders_sum_net_weight,
+            'average_customer_price' => $this->orders_avg_customer_price,
+            'customer_total' => $this->orders_sum_customer_total,
         ];
     }
 }

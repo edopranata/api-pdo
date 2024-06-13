@@ -28,7 +28,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TransactionExport implements WithEvents, WithTitle, WithDrawings, FromQuery, WithColumnWidths, WithHeadings, WithMapping, WithCustomStartCell, WithColumnFormatting, WithStyles
+class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, FromQuery, WithColumnWidths, WithHeadings, WithMapping, WithCustomStartCell, WithColumnFormatting, WithStyles
 {
     use Exportable;
 

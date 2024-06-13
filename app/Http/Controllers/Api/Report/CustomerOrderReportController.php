@@ -2,21 +2,29 @@
 
 namespace App\Http\Controllers\Api\Report;
 
+use App\Exports\Customer\CustomerOrderReportExport;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Customer\CustomerCollection;
 use App\Http\Resources\Customer\CustomerOrderResource;
 use App\Models\Customer;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerOrderReportController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        return $request->all();
+        $customer = Customer::query()
+            ->withCount('orders')
+            ->withSum('orders', 'net_weight')
+            ->withAvg('orders', 'customer_price')
+            ->withSum('orders', 'customer_total')
+            ->get();
+        return $customer;
     }
 
-    public function show(Customer $customer, Request $request)
+    public function show(Request $request)
     {
         $validator = Validator::make($request->only([
             'monthly'
@@ -30,15 +38,35 @@ class CustomerOrderReportController extends Controller
         $monthly = str($request->get('monthly'))->split('#/#');
 
         $date = ['month' => $monthly[1], 'year' => $monthly[0]];
-        $customer =  $customer->load(['orders' => function ($query) use ($date) {
-            $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
-        }]);
+        $customer = Customer::query()
+            ->withWhereHas('orders', function ($query) use ($date) {
+                $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
+            })
+            ->withCount('orders')
+            ->withSum('orders', 'net_weight')
+            ->withAvg('orders', 'customer_price')
+            ->withSum('orders', 'customer_total')
+            ->get();
 
-        return new CustomerOrderResource($customer);
+        return new CustomerCollection($customer);
     }
 
-    public function export(Customer $customer)
+    public function export(Request $request)
     {
-        return $customer;
+        $validator = Validator::make($request->only([
+            'monthly'
+        ]), [
+            'monthly' => ['required', 'date_format:Y/m'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
+        }
+
+        $monthly = str($request->get('monthly'))->split('#/#');
+
+
+        return Excel::download(new CustomerOrderReportExport($monthly), 'customer_order_' . $monthly[0] . $monthly[1] .'.xlsx');
+
     }
 }

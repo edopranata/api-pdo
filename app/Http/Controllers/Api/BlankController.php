@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exports\Transaction\TransactionExport;
+use App\Exports\Transaction\DeliveryOrderReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Cash\CashDetailResource;
 use App\Http\Resources\Cash\CashResource;

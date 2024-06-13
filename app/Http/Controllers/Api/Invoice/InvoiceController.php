@@ -155,10 +155,9 @@ class InvoiceController extends Controller
 
             $this->decrementCash($total, $trade_date, "INV#$invoice_number DO $customer->name", $invoice);
 
-            if($installment > 0) {
+            $loan = $customer->loan()->first();
 
-                $loan = $customer->loan()->first();
-
+            if($installment >= 0) {
                 if ($loan) {
                     // Add to loan details
                     $details = $loan->details()
@@ -182,7 +181,6 @@ class InvoiceController extends Controller
                     ]);
                 }
             }
-
             DB::commit();
 
             return InvoiceDataResource::make($invoice->load(['orders', 'installment', 'customer']));

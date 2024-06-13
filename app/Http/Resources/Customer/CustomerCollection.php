@@ -15,7 +15,14 @@ class CustomerCollection extends ResourceCollection
     public function toArray(Request $request): array
     {
         return [
-            'data'  => CustomerResource::collection($this->collection->all())
+            'data'  => CustomerResource::collection($this->collection->all()),
+            'summaries' => [
+                'loan' => $this->collection->sum('loan.balance'),
+                'orders_count' => $this->collection->sum('orders_count'),
+                'total_weight' => $this->collection->sum('orders_sum_net_weight'),
+                'average_customer_price' => $this->collection->sum('orders_avg_customer_price'),
+                'customer_total' => $this->collection->sum('orders_sum_customer_total')
+            ]
         ];
     }
 }

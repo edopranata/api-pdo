@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Report;
 
-use App\Exports\Transaction\TransactionExport;
+use App\Exports\Transaction\DeliveryOrderReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Factory\FactoryCollection;
 use App\Http\Resources\Factory\FactoryResource;
@@ -31,7 +31,7 @@ class ReportDeliveryOrderController extends Controller
 
     public function export(Factory $factory, Request $request)
     {
-        return Excel::download(new TransactionExport($factory), $request->get('file_name') ?? 'filename.xlsx');
+        return Excel::download(new DeliveryOrderReportExport($factory), $request->get('file_name') ?? 'filename.xlsx');
     }
 
     public function show(Factory $factory, Request $request): JsonResponse

@@ -11,7 +11,9 @@ use App\Http\Resources\Report\InvoiceDataResource;
 use App\Http\Traits\CashTrait;
 use App\Http\Traits\InvoiceTrait;
 use App\Models\Customer;
+use App\Models\Loan;
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -43,12 +45,12 @@ class LoanController extends Controller
         return new CustomerCollection($data);
     }
 
-    public function show(Customer $customer, Request $request)
+    public function show(Customer $customer, Request $request): JsonResponse
     {
         $loan = $customer->loan()->first();
-
         if($loan){
             $query = $loan->details()
+                ->where('balance', '<>', 0)
                 ->orderBy('created_at', 'desc');
 
             $data = $query->paginate($request->get('limit', 10));
@@ -118,7 +120,7 @@ class LoanController extends Controller
 
                 $invoice = $customer->invoices()
                     ->create([
-                        'user_id' => auth()->id(),
+                        'user_id' => auth('api')->id(),
                         'trade_date' => $trade_date,
                         'invoice_number' => $invoice_number,
                         'type' => $type,

@@ -142,12 +142,10 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
         Route::group(['prefix' => 'customerReport', 'as' => 'customerReport.'], function () {
             Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.customerReport.index,api');
-            Route::get('loanReport', [LoanReportController::class, 'index'])->name('loanReport')->middleware('permission:admin.report.customerReport.loanReport,api');
-            Route::get('{customer}/loanReportShow', [LoanReportController::class, 'show'])->name('loanReportShow')->middleware('permission:admin.report.customerReport.loanReportShow,api');
-            Route::post('{customer}/loanReportShowExport', [LoanReportController::class, 'export'])->name('loanReportShow')->middleware('permission:admin.report.customerReport.loanReportExport,api');
-            Route::get('orderReport', [CustomerOrderReportController::class, 'index'])->name('orderReport')->middleware('permission:admin.report.customerReport.orderReport,api');
-            Route::get('{customer}/orderReportShow', [CustomerOrderReportController::class, 'show'])->name('orderReportShow')->middleware('permission:admin.report.customerReport.orderReportShow,api');
-            Route::post('{customer}/orderReportExport', [CustomerOrderReportController::class, 'export'])->name('orderReportExport')->middleware('permission:admin.report.customerReport.orderReportExport,api');
+            Route::get('loanReport', [LoanReportController::class, 'show'])->name('loanReport')->middleware('permission:admin.report.customerReport.loanReport,api');
+            Route::post('loanReport', [LoanReportController::class, 'export'])->name('loanReportExport')->middleware('permission:admin.report.customerReport.loanReportExport,api');
+            Route::get('orderReport', [CustomerOrderReportController::class, 'show'])->name('orderReport')->middleware('permission:admin.report.customerReport.orderReport,api');
+            Route::post('orderReport', [CustomerOrderReportController::class, 'export'])->name('orderReportExport')->middleware('permission:admin.report.customerReport.orderReportExport,api');
         });
     });
 })->middleware('auth:sanctum');

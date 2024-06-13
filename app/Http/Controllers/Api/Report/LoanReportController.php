@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers\Api\Report;
 
+use App\Exports\Customer\CustomerLoanExport;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Customer\CustomerCollection;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LoanReportController extends Controller
 {
-    public function index(Request $request)
+    public function show(): CustomerCollection
     {
-        return $request->all();
+        return new CustomerCollection(Customer::query()->withWhereHas('loan')->get());
     }
 
-    public function show(Customer $customer)
+    public function export(): BinaryFileResponse
     {
-        return $customer;
-    }
+        return Excel::download(new CustomerLoanExport(), 'customer_loan_' . now()->format('Ymd') .'.xlsx');
 
-    public function export(Customer $customer)
-    {
-        return $customer;
     }
 }
