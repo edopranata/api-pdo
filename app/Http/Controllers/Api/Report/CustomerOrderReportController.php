@@ -38,7 +38,7 @@ class CustomerOrderReportController extends Controller
 
         $date = ['month' => $monthly[1], 'year' => $monthly[0]];
         $customer = Customer::query()
-            ->withWhereHas('orders', function ($query) use ($date) {
+            ->whereHas('orders', function ($query) use ($date) {
                 $query->whereMonth('trade_date', $date['month'])->whereYear('trade_date', $date['year']);
             })
             ->withCount(['orders' => function ($query) use ($date) {

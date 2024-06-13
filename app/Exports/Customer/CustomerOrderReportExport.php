@@ -129,7 +129,6 @@ class CustomerOrderReportExport  implements WithEvents, WithTitle, WithDrawings,
                 $tableStyle->setTheme(TableStyle::TABLE_STYLE_LIGHT1);
                 $tableStyle->setShowFirstColumn(true);
                 $tableStyle->setShowRowStripes(true);
-
                 $table->setStyle($tableStyle);
 
                 $event->sheet->addTable($table);
@@ -141,7 +140,7 @@ class CustomerOrderReportExport  implements WithEvents, WithTitle, WithDrawings,
     public function query(): \Illuminate\Database\Eloquent\Relations\Relation|Builder|\Illuminate\Database\Query\Builder
     {
         return Customer::query()
-            ->withWhereHas('orders', function ($query) {
+            ->whereHas('orders', function ($query) {
                 $query->whereMonth('trade_date', $this->month)->whereYear('trade_date', $this->year);
             })
             ->withCount(['orders' => function ($query) {
