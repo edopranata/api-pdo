@@ -18,8 +18,10 @@ class InvoiceDataController extends Controller
     {
         $invoices = Invoice::query()
             ->with(['orders', 'installment', 'customer'])
-            ->when($request->get('search'), function ($query, $search) {
-                $query->whereRelation('customer', 'name', $search);
+            ->when($request->get('search'), function (Builder $query, $search) {
+                $query
+                    ->whereRelation('customer', 'name', 'like', "%$search%")
+                    ->orWhere('invoice_number', 'like', "%$search%");
             })
             ->when($request->get('sortBy'), function ($query, $sort) {
                 $sortBy = collect(json_decode($sort));

@@ -42,7 +42,7 @@ class InvoiceCancelingController extends Controller
         return InvoiceDataResource::make($invoice->load(['orders', 'installment', 'customer']));
     }
 
-    public function destroy(Invoice $invoice, Request $request): JsonResponse
+    public function destroy(Invoice $invoice): JsonResponse
     {
         $invoice->load(['orders', 'installment', 'customer']);
         $user = auth('api')->user()->load('cash');
