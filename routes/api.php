@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DeliveryOrder\DeliveryOrderController;
 use App\Http\Controllers\Api\Factory\FactoryController;
 use App\Http\Controllers\Api\Income\OrderIncomeController;
+use App\Http\Controllers\Api\Invoice\InvoiceCancelingController;
 use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
@@ -107,11 +108,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('{customer}', [InvoiceController::class, 'show'])->name('showInvoice')->middleware('permission:admin.transaction.invoice.showInvoice,api');
             Route::post('{customer}', [InvoiceController::class, 'store'])->name('createInvoice')->middleware('permission:admin.transaction.invoice.createInvoice,api');
             Route::get('{invoice}/print', [InvoiceDataController::class, 'show'])->name('print')->middleware('permission:admin.transaction.invoice.print,api');
-
         });
         Route::group(['prefix' => 'income', 'as' => 'income.'], function () {
             Route::get('', [OrderIncomeController::class, 'index'])->name('index')->middleware('permission:admin.transaction.income.index,api');
             Route::post('{factory}', [OrderIncomeController::class, 'store'])->name('createIncome')->middleware('permission:admin.transaction.income.createIncome,api');
+        });
+
+        Route::group(['prefix' => 'invoiceCanceling', 'as' => 'invoiceCanceling.'], function () {
+            Route::get('', [InvoiceCancelingController::class, 'index'])->name('index')->middleware('permission:admin.transaction.invoiceCanceling.index,api');
+            Route::get('{invoice}', [InvoiceCancelingController::class, 'show'])->name('showInvoiceCanceling')->middleware('permission:admin.transaction.invoiceCanceling.showInvoiceCanceling,api');
+            Route::delete('{invoice}', [InvoiceCancelingController::class, 'destroy'])->name('cancelInvoice')->middleware('permission:admin.transaction.invoiceCanceling.cancelInvoice,api');
 
         });
     });
