@@ -24,7 +24,7 @@ class InvoiceDataResource extends JsonResource
             'customer_id' => $this->customer_id,
             'user_id' => $this->user_id,
             'invoice_number' => $this->invoice_number,
-            'invoice_date' => $this->trade_date->format('d-m-Y'),
+            'invoice_date' => $this->trade_date->format('d-m-Y H:i:s'),
             'type' => $this->type,
             'customer' => CustomerResource::make($this->whenLoaded('customer')),
             'orders' => DeliveryOrderResource::collection($this->whenLoaded('orders')),
