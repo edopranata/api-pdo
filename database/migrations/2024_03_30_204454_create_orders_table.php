@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Factory::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Customer::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
-            $table->dateTime('trade_date');
+            $table->date('trade_date');
 
             $table->double('net_weight')->default(0)->comment('Berat bersih timbangan pabrik (kg)');
             $table->double('net_price')->default(0)->comment('Harga beli pabrik (Rp)');
