@@ -132,6 +132,24 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('{factory}', [ReportDeliveryOrderController::class, 'export'])->name('export')->middleware('permission:admin.report.DOReport.export,api');
         });
 
+        Route::group(['prefix' => 'orderReport', 'as' => 'orderReport.'], function () {
+            Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.orderReport.index,api');
+            Route::get('factory', [ReportDeliveryOrderController::class, 'index'])->name('factoryReport')->middleware('permission:admin.report.orderReport.factoryReport,api');
+            Route::get('factory/{factory}', [ReportDeliveryOrderController::class, 'show'])->name('factoryReportShow')->middleware('permission:admin.report.orderReport.factoryReportShow,api');
+            Route::post('factory/{factory}', [ReportDeliveryOrderController::class, 'export'])->name('factoryReportExport')->middleware('permission:admin.report.orderReport.factoryReportExport,api');
+
+            Route::get('monthlyFactory', [ReportDeliveryOrderController::class, 'index'])->name('monthlyFactoryReport')->middleware('permission:admin.report.orderReport.monthlyFactoryReport,api');
+            Route::get('monthlyFactory/{factory}', [ReportDeliveryOrderController::class, 'show'])->name('monthlyFactoryReportShow')->middleware('permission:admin.report.orderReport.monthlyFactoryReportShow,api');
+            Route::post('monthlyFactory/{factory}', [ReportDeliveryOrderController::class, 'export'])->name('monthlyFactoryReportExport')->middleware('permission:admin.report.orderReport.monthlyFactoryReportExport,api');
+
+            Route::get('allFactory', [ReportDeliveryOrderController::class, 'showAll'])->name('allFactoryReportShow')->middleware('permission:admin.report.orderReport.allFactoryReportShow,api');
+            Route::post('allFactory', [ReportDeliveryOrderController::class, 'exportAll'])->name('allFactoryReportExport')->middleware('permission:admin.report.orderReport.allFactoryReportExport,api');
+
+            Route::get('monthlyAllFactory', [ReportDeliveryOrderController::class, 'showAll'])->name('monthlyAllFactoryReportShow')->middleware('permission:admin.report.orderReport.monthlyAllFactoryReportShow,api');
+            Route::post('monthlyAllFactory', [ReportDeliveryOrderController::class, 'exportAll'])->name('monthlyAllFactoryReportExport')->middleware('permission:admin.report.orderReport.monthlyAllFactoryReportExport,api');
+
+        });
+
         Route::group(['prefix' => 'cashReport', 'as' => 'cashReport.'], function () {
             Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.cashReport.index,api');
             Route::get('dailyCash', [ReportCashController::class, 'show'])->name('dailyCash')->middleware('permission:admin.report.cashReport.dailyCash,api');

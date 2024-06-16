@@ -6,24 +6,25 @@ use App\Exports\Customer\CustomerOrderReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Customer\CustomerCollection;
 use App\Models\Customer;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CustomerOrderReportController extends Controller
 {
-    public function index()
+    public function index(): Collection|array
     {
-        $customer = Customer::query()
+        return Customer::query()
             ->withCount('orders')
             ->withSum('orders', 'net_weight')
             ->withAvg('orders', 'customer_price')
             ->withSum('orders', 'customer_total')
             ->get();
-        return $customer;
     }
 
-    public function show(Request $request)
+    public function show(Request $request): JsonResponse|CustomerCollection
     {
         $validator = Validator::make($request->only([
             'monthly'

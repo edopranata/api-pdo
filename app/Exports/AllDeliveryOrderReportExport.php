@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Exports\Transaction;
+namespace App\Exports;
 
-use App\Models\Factory;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,24 +28,21 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Table;
 use PhpOffice\PhpSpreadsheet\Worksheet\Table\TableStyle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, FromQuery, WithColumnWidths, WithHeadings, WithMapping, WithCustomStartCell, WithColumnFormatting, WithStyles
+class AllDeliveryOrderReportExport  implements WithEvents, WithTitle, WithDrawings, FromQuery, WithColumnWidths, WithHeadings, WithMapping, WithCustomStartCell, WithColumnFormatting, WithStyles
 {
     use Exportable;
 
-    protected Factory $factory;
     protected Request $request;
 
-    public function __construct($factory, Request $request)
+    public function __construct(Request $request)
     {
-        $this->factory = $factory;
         $this->request = $request;
     }
 
     public function query(): Relation|Builder
     {
         return Order::query()
-            ->where('factory_id', $this->factory->id)
-            ->with(['customer'])
+            ->with(['customer', 'factory'])
             ->when($this->request->get('start_date'), function (Builder $builder, $start_date) {
                 $builder->whereDate('trade_date', '>=', $start_date);
             })
@@ -72,8 +68,8 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
     {
         return [
             'A' => NumberFormat::FORMAT_NUMBER,
-            'B' => NumberFormat::FORMAT_DATE_DDMMYYYY,
-            'D' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
+            'B' => NumberFormat::FORMAT_GENERAL,
+            'C' => NumberFormat::FORMAT_DATE_DDMMYYYY,
             'E' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'F' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'G' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
@@ -83,6 +79,7 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
             'K' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'L' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'M' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
+            'O' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
         ];
     }
 
@@ -91,6 +88,7 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
         return [
             [
                 '=row() - 6',
+                $row->factory->name,
                 Date::dateTimeToExcel($row->trade_date),
                 $row->customer->name,
                 $row->net_weight,
@@ -112,6 +110,7 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
         return [
             [
                 'NO',
+                'FACTORY',
                 'TRADE DATE',
                 'CUSTOMER NAME',
                 'NET WEIGHT',
@@ -136,19 +135,20 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
     public function columnWidths(): array
     {
         return [
-            'A' => 6,
-            'B' => 12,
-            'C' => 50,
-            'D' => 15,
+            'A' => 14,
+            'B' => 50,
+            'C' => 12,
+            'D' => 50,
             'E' => 15,
-            'F' => 20,
-            'G' => 15,
+            'F' => 15,
+            'G' => 20,
             'H' => 15,
             'I' => 15,
             'J' => 15,
             'K' => 15,
             'L' => 15,
             'M' => 15,
+            'N' => 15,
         ];
     }
 
@@ -160,7 +160,7 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
 
                 $period = $this->request->has('monthly') ? "MONTH $monthly[1]-$monthly[0]"  : "DATE " . Carbon::create($this->request->get('start_date'))->format('Y-m-d') . " - " . Carbon::create($this->request->get('end_date'))->format('Y-m-d');
 
-                $event->sheet->cellValue('C2', 'REPORT DO ' . str($this->factory->name)->upper());
+                $event->sheet->cellValue('C2', 'REPORT TRANSACTION DELIVERY ORDER');
                 $event->sheet->cellValue('C3', 'PERIOD ' . $period);
 
                 $row = $this->query()->get();
@@ -169,32 +169,32 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
                 $table->setName('table_do');
                 $table->setShowTotalsRow(true);
 
-                $table->setRange('A6:M' . $row->count() + 7);
-                $table->getColumn('C')->setTotalsRowLabel('Total');
-                $table->getColumn('D')->setTotalsRowFunction('sum');
-                $table->getColumn('E')->setTotalsRowFunction('average');
-                $table->getColumn('F')->setTotalsRowFunction('sum');
-                $table->getColumn('G')->setTotalsRowFunction('average');
-                $table->getColumn('H')->setTotalsRowFunction('sum');
+                $table->setRange('A6:N' . $row->count() + 7);
+                $table->getColumn('D')->setTotalsRowLabel('Total');
+                $table->getColumn('E')->setTotalsRowFunction('sum');
+                $table->getColumn('F')->setTotalsRowFunction('average');
+                $table->getColumn('G')->setTotalsRowFunction('sum');
+                $table->getColumn('H')->setTotalsRowFunction('average');
                 $table->getColumn('I')->setTotalsRowFunction('sum');
                 $table->getColumn('J')->setTotalsRowFunction('sum');
                 $table->getColumn('K')->setTotalsRowFunction('sum');
                 $table->getColumn('L')->setTotalsRowFunction('sum');
                 $table->getColumn('M')->setTotalsRowFunction('sum');
+                $table->getColumn('N')->setTotalsRowFunction('sum');
 
-                $event->getSheet()->getCell('C' . $row->count() + 7)->setValue( 'Total');
-                $event->getSheet()->getCell('D' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[NET WEIGHT])');
-                $event->getSheet()->getCell('E' . $row->count() + 7)->setValue( '=SUBTOTAL(101,table_do[CUST PRICE])');
-                $event->getSheet()->getCell('F' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[CUSTOMER TOTAL])');
-                $event->getSheet()->getCell('G' . $row->count() + 7)->setValue( '=SUBTOTAL(101,table_do[MARGIN])');
-                $event->getSheet()->getCell('H' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[FACTORY PRICE])');
-                $event->getSheet()->getCell('I' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[GROSS TOTAL])');
-                $event->getSheet()->getCell('J' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPN])');
-                $event->getSheet()->getCell('K' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPh22])');
-                $event->getSheet()->getCell('L' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[BANK TRANSFER])');
-                $event->getSheet()->getCell('M' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[INCOME])');
+                $event->getSheet()->getCell('D' . $row->count() + 7)->setValue( 'Total');
+                $event->getSheet()->getCell('E' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[NET WEIGHT])');
+                $event->getSheet()->getCell('F' . $row->count() + 7)->setValue( '=SUBTOTAL(101,table_do[CUST PRICE])');
+                $event->getSheet()->getCell('G' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[CUSTOMER TOTAL])');
+                $event->getSheet()->getCell('H' . $row->count() + 7)->setValue( '=SUBTOTAL(101,table_do[MARGIN])');
+                $event->getSheet()->getCell('I' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[FACTORY PRICE])');
+                $event->getSheet()->getCell('J' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[GROSS TOTAL])');
+                $event->getSheet()->getCell('K' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPN])');
+                $event->getSheet()->getCell('L' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[PPh22])');
+                $event->getSheet()->getCell('M' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[BANK TRANSFER])');
+                $event->getSheet()->getCell('N' . $row->count() + 7)->setValue( '=SUBTOTAL(109,table_do[INCOME])');
 
-                $event->sheet->numberFormat('D' . $row->count() + 7 . ':M' . $row->count() + 7, NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
+                $event->sheet->numberFormat('D' . $row->count() + 7 . ':N' . $row->count() + 7, NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1);
 
                 $tableStyle = new TableStyle();
                 $tableStyle->setTheme(TableStyle::TABLE_STYLE_LIGHT1);
@@ -211,15 +211,12 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
 
     public function styles(Worksheet $sheet): void
     {
-        $sheet->getStyle('A4:M4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE);
-        $sheet->getStyle('D6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('A4:N4')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_DOUBLE);
+        $sheet->getStyle('A6:N6')->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle('A6:N6')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
 
-        $sheet->getStyle('A6:M6')->getBorders()->getTop()->setBorderStyle(Border::BORDER_THIN);
-        $sheet->getStyle('A6:M6')->getBorders()->getBottom()->setBorderStyle(Border::BORDER_MEDIUM);
-
-        $sheet->getStyle('B6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('D6:M6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
-
+        $sheet->getStyle('A6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('E6:N6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
 
     }
 
@@ -230,11 +227,10 @@ class DeliveryOrderReportExport implements WithEvents, WithTitle, WithDrawings, 
         $drawing->setDescription('PDO');
         $drawing->setPath(public_path('logo.png'));
         $drawing->setHeight(74);
-        $drawing->setOffsetX(25);
+        $drawing->setOffsetX(0);
         $drawing->setOffsetY(3);
         $drawing->setCoordinates('A1');
 
         return $drawing;
     }
-
 }
