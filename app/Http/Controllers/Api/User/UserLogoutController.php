@@ -15,7 +15,8 @@ class UserLogoutController extends Controller
     {
         DB::beginTransaction();
         try {
-            $request->user()->tokens()->delete();
+            $request->user()->currentAccessToken()->delete();
+
             DB::commit();
 
             return response()->json([

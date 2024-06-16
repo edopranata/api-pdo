@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -23,6 +24,13 @@ class BlankController extends Controller
     {
         return response()->json([
             'status' => true
+        ], 201);
+    }
+
+    public function test(Request $request)
+    {
+        return response()->json([
+            'user' => auth('api')->user()->getAuthIdentifier(),
         ], 201);
     }
 }

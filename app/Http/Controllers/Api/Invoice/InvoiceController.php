@@ -126,7 +126,7 @@ class InvoiceController extends Controller
              * 3. Cash
              *    - Decrement Cash
              */
-            $trade_date = Carbon::create($request->get('trade_date'));
+            $trade_date = Carbon::create($request->get('trade_date') . ' ' . $now->format('H:i:s'));
             $type = 'DO';
             $sequence = $this->getLastSequence($trade_date, $type);
             $invoice_number = 'TM' . $type . $trade_date->format('Y') . sprintf('%08d', $sequence);

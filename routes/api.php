@@ -33,6 +33,7 @@ Route::post('login', UserLoginController::class);
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::post('/', [DashboardController::class, 'index'])->name('index');
+    Route::get('/test', [BlankController::class, 'test']);
     Route::group(['prefix' => 'management', 'as' => 'management.'], function () {
         Route::group(['prefix' => 'users', 'as' => 'users.'], function () {
             Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:admin.management.users.index,api');

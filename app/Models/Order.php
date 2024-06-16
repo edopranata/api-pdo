@@ -15,7 +15,7 @@ class Order extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'trade_date' => 'datetime:Y-m-d H:i:s',
+        'trade_date' => 'datetime:Y-m-d',
         'invoice_status' => 'datetime:Y-m-d H:i:s',
         'income_status' => 'datetime:Y-m-d H:i:s',
         'created_at' => 'datetime:Y-m-d H:i:s',

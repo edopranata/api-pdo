@@ -1,38 +1,43 @@
 <?php
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
 
 Route::get('/', function () {
     return response()->json([
-        'App Version' => \Illuminate\Support\Facades\App::version()
+        'Backend Version' => App::version(),
+        'Environment' => App::environment()
     ], 201);
 });
 
-Route::get('/web', function (){
-    $permissions = collect(Route::getRoutes())
-        ->whereNotNull('action.as')
-        ->map(function ($route) {
-            $action = collect($route->action)->toArray();
-            $method = collect($route->methods)->first();
-            $as = str($action['as'])->lower();
-            if ($as->startsWith('admin') && !$as->endsWith('.')) {
-                $name = Str::replace('admin.', '', $action['as']);
-                return [
-                    'method' => $method,
-                    'name' => $action['as'],
-                    'parent' => \str(collect(\str($name)->explode('.'))[0])->headline(),
-                    'children' => \str(collect(\str($name)->explode('.'))[1])->headline(),
-                    'title' => \str(collect(\str($name)->explode('.'))[2])->headline(),
-                    'path' => $route->uri
-                ];
-            }else {
-                return null;
+Route::get('/test', function (){
+    \App\Models\Invoice::query()
+        ->withTrashed()
+        ->get()->chunk(100)->each(function ($items) {
+            foreach ($items as $item) {
+                $item->update([
+                    'trade_date' => $item->created_at
+                ]);
             }
-        })
-        ->filter(function ($value) {
-            return !is_null($value);
         });
 
-    return $permissions;
+    \App\Models\CashDetail::query()
+        ->withTrashed()
+        ->get()->chunk(100)->each(function ($items) {
+            foreach ($items as $item) {
+                $item->update([
+                    'trade_date' => $item->created_at
+                ]);
+            }
+        });
+
+    \App\Models\LoanDetail::query()
+        ->withTrashed()
+        ->get()->chunk(100)->each(function ($items) {
+            foreach ($items as $item) {
+                $item->update([
+                    'trade_date' => $item->created_at
+                ]);
+            }
+        });
 });

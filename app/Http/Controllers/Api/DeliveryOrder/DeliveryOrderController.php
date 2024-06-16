@@ -85,9 +85,8 @@ class DeliveryOrderController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
-                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin'
+                'customer_id', 'net_weight', 'net_price', 'margin'
             ]), [
-                'trade_date' => 'required|date|before_or_equal:' . Carbon::now()->toDateString(),
                 'customer_id' => 'required|exists:customers,id',
                 'net_weight' => 'required|numeric|min:1',
                 'net_price' => 'required|numeric|min:1',
@@ -102,7 +101,7 @@ class DeliveryOrderController extends Controller
             $customer_total = $customer_price * $request->get('net_weight');
             $delivery = $factory->order()
                 ->create([
-                    'trade_date' => Carbon::createFromFormat('Y/m/d H:i:s', $request->get('trade_date') . ' ' . $now->format('H:i:s')),
+                    'trade_date' => $now,
                     'customer_id' => $request->get('customer_id'),
                     'net_weight' => $request->get('net_weight'),
                     'net_price' => $request->get('net_price'),
@@ -140,9 +139,8 @@ class DeliveryOrderController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
-                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin',
+                'customer_id', 'net_weight', 'net_price', 'margin',
             ]), [
-                'trade_date' => 'required|date|before_or_equal:' . Carbon::now()->toDateString(),
                 'customer_id' => 'required|exists:customers,id',
                 'net_weight' => 'required|numeric|min:1',
                 'net_price' => 'required|numeric|min:1',
@@ -163,7 +161,7 @@ class DeliveryOrderController extends Controller
             $customer_total = $customer_price * $request->get('net_weight');
 
             $order->update([
-                'trade_date' => Carbon::createFromFormat('Y/m/d H:i:s', $request->get('trade_date') . ' ' . $now->format('H:i:s')),
+                'trade_date' => $now,
                 'customer_id' => $request->get('customer_id'),
                 'factory_id' => $request->get('factory_id'),
                 'net_weight' => $request->get('net_weight'),
