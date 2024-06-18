@@ -148,7 +148,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
 
             Route::get('monthlyAllFactory', [ReportDeliveryOrderController::class, 'showAll'])->name('monthlyAllFactoryReportShow')->middleware('permission:admin.report.orderReport.monthlyAllFactoryReportShow,api');
             Route::post('monthlyAllFactory', [ReportDeliveryOrderController::class, 'exportAll'])->name('monthlyAllFactoryReportExport')->middleware('permission:admin.report.orderReport.monthlyAllFactoryReportExport,api');
-
         });
 
         Route::group(['prefix' => 'cashReport', 'as' => 'cashReport.'], function () {
@@ -172,6 +171,13 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('orderReport', [CustomerOrderReportController::class, 'show'])->name('orderReport')->middleware('permission:admin.report.customerReport.orderReport,api');
             Route::post('orderReport', [CustomerOrderReportController::class, 'export'])->name('orderReportExport')->middleware('permission:admin.report.customerReport.orderReportExport,api');
         });
+
+//        Route::group(['prefix' => 'incomeReport', 'as' => 'incomeReport.'], function () {
+//           Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.incomeReport.index,api');
+//            Route::get('monthlyFactoryIncome', [ReportDeliveryOrderController::class, 'index'])->name('monthlyFactoryIncomeReport')->middleware('permission:admin.report.incomeReport.monthlyFactoryIncomeReport,api');
+//            Route::get('monthlyFactoryIncome/{factory}', [ReportDeliveryOrderController::class, 'show'])->name('monthlyFactoryIncomeReportShow')->middleware('permission:admin.report.incomeReport.monthlyFactoryIncomeReportShow,api');
+//            Route::post('monthlyFactoryIncome/{factory}', [ReportDeliveryOrderController::class, 'export'])->name('monthlyFactoryIncomeReportExport')->middleware('permission:admin.report.incomeReport.monthlyFactoryIncomeReportExport,api');
+//        });
     });
 })->middleware('auth:sanctum');
 
