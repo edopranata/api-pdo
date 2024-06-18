@@ -11,18 +11,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CustomerOrderReportController extends Controller
 {
-    public function index(): Collection|array
-    {
-        return Customer::query()
-            ->withCount('orders')
-            ->withSum('orders', 'net_weight')
-            ->withAvg('orders', 'customer_price')
-            ->withSum('orders', 'customer_total')
-            ->get();
-    }
 
     public function show(Request $request): JsonResponse|CustomerCollection
     {
@@ -59,7 +51,7 @@ class CustomerOrderReportController extends Controller
         return new CustomerCollection($customer);
     }
 
-    public function export(Request $request)
+    public function export(Request $request): BinaryFileResponse|JsonResponse
     {
         $validator = Validator::make($request->only([
             'monthly'
