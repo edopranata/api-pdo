@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Invoice\InvoiceController;
 use App\Http\Controllers\Api\Loan\LoanController;
 use App\Http\Controllers\Api\Permission\PermissionController;
 use App\Http\Controllers\Api\Price\FactoryPriceController;
+use App\Http\Controllers\Api\Report\AllFactoryIncomeReport;
 use App\Http\Controllers\Api\Report\CustomerOrderReportController;
 use App\Http\Controllers\Api\Report\InvoiceDataController;
 use App\Http\Controllers\Api\Report\LoanReportController;
@@ -172,12 +173,13 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('orderReport', [CustomerOrderReportController::class, 'export'])->name('orderReportExport')->middleware('permission:admin.report.customerReport.orderReportExport,api');
         });
 
-//        Route::group(['prefix' => 'incomeReport', 'as' => 'incomeReport.'], function () {
-//           Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.incomeReport.index,api');
-//            Route::get('monthlyFactoryIncome', [ReportDeliveryOrderController::class, 'index'])->name('monthlyFactoryIncomeReport')->middleware('permission:admin.report.incomeReport.monthlyFactoryIncomeReport,api');
+        Route::group(['prefix' => 'incomeReport', 'as' => 'incomeReport.'], function () {
+           Route::get('', [BlankController::class, 'index'])->name('index')->middleware('permission:admin.report.incomeReport.index,api');
+            Route::get('monthlyAllFactoryIncome', [AllFactoryIncomeReport::class, 'show'])->name('monthlyAllFactoryIncomeReport')->middleware('permission:admin.report.incomeReport.monthlyAllFactoryIncomeReport,api');
+            Route::post('monthlyAllFactoryIncome', [AllFactoryIncomeReport::class, 'export'])->name('monthlyAllFactoryIncomeReportExport')->middleware('permission:admin.report.incomeReport.monthlyAllFactoryIncomeReportExport,api');
 //            Route::get('monthlyFactoryIncome/{factory}', [ReportDeliveryOrderController::class, 'show'])->name('monthlyFactoryIncomeReportShow')->middleware('permission:admin.report.incomeReport.monthlyFactoryIncomeReportShow,api');
 //            Route::post('monthlyFactoryIncome/{factory}', [ReportDeliveryOrderController::class, 'export'])->name('monthlyFactoryIncomeReportExport')->middleware('permission:admin.report.incomeReport.monthlyFactoryIncomeReportExport,api');
-//        });
+        });
     });
 })->middleware('auth:sanctum');
 

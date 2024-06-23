@@ -16,20 +16,33 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-//    $period = collect(CarbonPeriod::create(now()->startOfYear(), '1 month', now())->toArray())->map(function (Carbon $date) {
-//        return $date->format('m Y');
-//    });
+    $period = CarbonPeriod::create(now(), '1 month', now()->addMonth());
+
+    if($period->count() > 0){
+
+        $orders = Order::query()
+            ->select(
+                DB::raw('sum(net_weight) as sums'),
+                DB::raw("DATE_FORMAT(trade_date,'%m %Y') as months"),
+                DB::raw("factory_id")
+            )
+            ->whereDate('trade_date', '>=', $period->first()->startOfMonth()->format('Y-m-d'))
+            ->whereDate('trade_date', '<=', $period->last()->endOfMonth()->format('Y-m-d'))
+            ->groupBy('months', 'factory_id')
+            ->orderBy('months', 'ASC')
+            ->get()->collect();
+    }
+
+
+
+    return response()->json([
+        'period' => $period,
+        'orders' => $orders ?? null,
+        'first' => $period->first()->startOfMonth(),
+        'last' => $period->last()->endOfMonth(),
+    ]);
 //
-//    $orders = Order::query()
-//        ->select(
-//            DB::raw('sum(net_weight) as sums'),
-//            DB::raw("DATE_FORMAT(trade_date,'%m %Y') as months"),
-//            DB::raw("factory_id")
-//        )
-//        ->whereYear('trade_date', date('Y'))
-//        ->groupBy('months', 'factory_id')
-//        ->orderBy('months', 'ASC')
-//        ->get()->collect();
+
 //
 //    $factories = Factory::all()->map(function ($item) use ($orders, $period) {
 //        return [

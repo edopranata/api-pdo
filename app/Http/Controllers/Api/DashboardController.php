@@ -190,7 +190,7 @@ class DashboardController extends Controller
                     ],
 
                     'title' => [
-                        'text' => 'Delivery Order Summaries ' .date('Y'),
+                        'text' => 'Delivery Order Summaries ' .date('Y') . ' (ton)',
                         'align' => 'center',
                         'floating' => true
                     ],
