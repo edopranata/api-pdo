@@ -14,6 +14,7 @@ use App\Models\Order;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Closure;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,17 +23,18 @@ use Illuminate\Support\Facades\Validator;
 class DeliveryOrderController extends Controller
 {
     use OrderTrait;
+
     public function index(Request $request): JsonResponse
     {
         $day = 30;
         $now = now();
         $periods = CarbonPeriod::create($now->subDays($day), now());
-        if($request->get('limit') && $request->get('page')) {
+        if ($request->get('limit') && $request->get('page')) {
             $deliveries = $this->getOrderTable($request);
             return response()->json([
                 'order' => DeliveryOrderCollection::make($deliveries),
             ], 201);
-        }else if ($request->get('factory_id') && $request->get('trade_date')) {
+        } else if ($request->get('factory_id') && $request->get('trade_date')) {
             $factory_price = FactoryPrice::query()
                 ->where('factory_id', $request->get('factory_id'))
                 ->where('date', $request->get('trade_date'))
@@ -41,7 +43,7 @@ class DeliveryOrderController extends Controller
             return response()->json([
                 'factory_price' => $factory_price,
             ], 201);
-        }else{
+        } else {
             $customers = Customer::query()->with('loan')->get();
             $factories = Factory::query()->with(['prices' => function ($builder) use ($periods) {
                 $builder->whereDate('date', '>=', $periods->first()->format('Y/m/d'))->orderBy('date', 'desc');
@@ -74,8 +76,6 @@ class DeliveryOrderController extends Controller
                 'periods' => $date,
             ], 201);
         }
-
-
     }
 
     public function store(Factory $factory, Request $request)
@@ -85,7 +85,7 @@ class DeliveryOrderController extends Controller
         DB::beginTransaction();
         try {
             $validator = Validator::make($request->only([
-                'trade_date','customer_id', 'net_weight', 'net_price', 'margin'
+                'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin'
             ]), [
                 'trade_date' => 'required|date|before_or_equal:' . $now->toDateString(),
                 'customer_id' => 'required|exists:customers,id',
@@ -121,7 +121,7 @@ class DeliveryOrderController extends Controller
             DB::commit();
             return new DeliveryOrderResource($delivery->load(['user', 'customer', 'factory']));
 
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             abort(403, $exception->getCode() . ' ' . $exception->getMessage());
         }
     }
@@ -132,32 +132,43 @@ class DeliveryOrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
-
         $factory = Factory::query()->find($request->get('factory_id'));
         $margin = (int)$factory->margin;
 
         $now = Carbon::now();
+
+        if ($order->invoice_status) {
+            return response()->json(['status' => false, 'errors' => ['customer_id' => ['Transaksi Gagal, Invoice DO ini telah terbit']]], 422);
+        }
+        if ($order->income_status) {
+            return response()->json(['status' => false, 'errors' => ['customer_id' => ['Transaksi Gagal, Income DO ini telah terbit']]], 422);
+        }
+        if ($order->deleted_at) {
+            return response()->json(['status' => false, 'errors' => ['customer_id' => ['Transaksi Gagal, DO ini telah dihapus sebelumnya']]], 422);
+        }
+
+        $validator = Validator::make($request->only([
+            'trade_date', 'customer_id', 'net_weight', 'net_price', 'margin',
+        ]), [
+            'trade_date' => 'required|date|before_or_equal:' . $now->toDateString(),
+            'customer_id' => 'required|exists:customers,id',
+            'net_weight' => 'required|numeric|min:1',
+            'net_price' => 'required|numeric|min:1',
+            'margin' => ['required', 'numeric', 'max:100',
+                function (string $attribute, mixed $value, Closure $fail) use ($margin) {
+
+                    if ($value < $margin) {
+                        $fail("Invalid margin");
+                    }
+                }],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
+        }
+
         DB::beginTransaction();
         try {
-            $validator = Validator::make($request->only([
-                'trade_date','customer_id', 'net_weight', 'net_price', 'margin',
-            ]), [
-                'trade_date' => 'required|date|before_or_equal:' . $now->toDateString(),
-                'customer_id' => 'required|exists:customers,id',
-                'net_weight' => 'required|numeric|min:1',
-                'net_price' => 'required|numeric|min:1',
-                'margin' => ['required','numeric','max:100',
-                    function (string $attribute, mixed $value, Closure $fail) use ($margin) {
-
-                        if ($value < $margin) {
-                            $fail("Invalid margin");
-                        }
-                    }],
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['status' => false, 'errors' => $validator->errors()->toArray()], 422);
-            }
 
             $customer_price = $request->get('customer_price');
             $customer_total = $customer_price * $request->get('net_weight');
@@ -183,7 +194,7 @@ class DeliveryOrderController extends Controller
 
             return response()->json(['status' => true], 201);
 
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             DB::rollBack();
             abort(403, $exception->getCode() . ' ' . $exception->getMessage());
         }
@@ -192,16 +203,26 @@ class DeliveryOrderController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Order $order)
+    public function destroy(Order $order): JsonResponse
     {
         DB::beginTransaction();
+
+        if ($order->invoice_status) {
+            return response()->json(['status' => false, 'errors' => ['customer_id' => ['Transaksi Gagal, Invoice DO ini telah terbit']]], 422);
+        }
+        if ($order->income_status) {
+            return response()->json(['status' => false, 'errors' => ['customer_id' => ['Transaksi Gagal, Income DO ini telah terbit']]], 422);
+        }
+        if ($order->deleted_at) {
+            return response()->json(['status' => false, 'errors' => ['customer_id' => ['Transaksi Gagal, DO ini telah dihapus sebelumnya']]], 422);
+        }
         try {
 
             $order->delete();
 
             DB::commit();
             return response()->json(['status' => true], 201);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             DB::rollBack();
             return response()->json([
                 'status' => false,
