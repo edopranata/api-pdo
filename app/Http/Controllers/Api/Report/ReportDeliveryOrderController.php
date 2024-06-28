@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Report;
 
-use App\Exports\AllDeliveryOrderReportExport;
+use App\Exports\Transaction\AllDeliveryOrderReportExport;
 use App\Exports\Transaction\DeliveryOrderReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Factory\FactoryResource;

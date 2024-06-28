@@ -6,15 +6,17 @@ use App\Exports\Income\AllFactoryIncomeExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Income\IncomeDataCollection;
 use App\Models\Income;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AllFactoryIncomeReport extends Controller
 {
 
 
-    public function show(Request $request)
+    public function show(Request $request): JsonResponse
     {
         $income = Income::query()
             ->with(['factory'])
@@ -34,7 +36,7 @@ class AllFactoryIncomeReport extends Controller
 
     }
 
-    public function export(Request $request)
+    public function export(Request $request): BinaryFileResponse|JsonResponse
     {
         $validator = Validator::make($request->only([
             'monthly'

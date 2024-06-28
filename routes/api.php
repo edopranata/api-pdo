@@ -180,8 +180,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('monthlyAllFactoryIncome', [AllFactoryIncomeReport::class, 'export'])->name('monthlyAllFactoryIncomeReportExport')->middleware('permission:admin.report.incomeReport.monthlyAllFactoryIncomeReportExport,api');
 
             Route::get('detailFactoryIncome', [FactoryIncomeReport::class, 'index'])->name('detailFactoryIncome')->middleware('permission:admin.report.incomeReport.detailFactoryIncome,api');
-            Route::get('detailFactoryIncome/{factory}', [FactoryIncomeReport::class, 'show'])->name('detailFactoryIncomeShow')->middleware('permission:admin.report.incomeReport.detailFactoryIncomeShow,api');
-            Route::post('detailFactoryIncome/{factory}', [FactoryIncomeReport::class, 'export'])->name('detailFactoryIncomeExport')->middleware('permission:admin.report.incomeReport.detailFactoryIncomeExport,api');
+            Route::get('detailFactoryIncome/{income}', [FactoryIncomeReport::class, 'show'])->name('detailFactoryIncomeShow')->middleware('permission:admin.report.incomeReport.detailFactoryIncomeShow,api');
+            Route::post('detailFactoryIncome/{income}', [FactoryIncomeReport::class, 'export'])->name('detailFactoryIncomeExport')->middleware('permission:admin.report.incomeReport.detailFactoryIncomeExport,api');
 
         });
     });

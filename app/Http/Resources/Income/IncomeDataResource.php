@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Income;
 
 use App\Http\Resources\Factory\FactoryResource;
+use App\Http\Resources\Order\DeliveryOrderResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,9 +20,10 @@ class IncomeDataResource extends JsonResource
             'id'    => $this->id,
             'factory' => new FactoryResource($this->whenLoaded('factory')),
             'trade_date' => $this->trade_date->format('Y-m-d'),
-            'period_start' => $this->period_start,
-            'period_end' => $this->period_end,
-            'orders' => $this->whenLoaded('orders', [
+            'period_start' => $this->period_start->format('Y-m-d'),
+            'period_end' => $this->period_end->format('Y-m-d'),
+            'orders' => DeliveryOrderResource::collection($this->whenLoaded('orders')),
+            'summaries' => $this->whenLoaded('orders', [
                 'customer_price' => $this->orders->avg('customer_price'),
                 'customer_total' => $this->orders->sum('customer_total'),
                 'factory_price' => $this->orders->avg('net_price'),

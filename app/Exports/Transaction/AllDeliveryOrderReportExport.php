@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exports;
+namespace App\Exports\Transaction;
 
 use App\Models\Order;
 use Carbon\Carbon;

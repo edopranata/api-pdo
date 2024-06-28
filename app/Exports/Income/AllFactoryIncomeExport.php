@@ -59,32 +59,15 @@ class AllFactoryIncomeExport implements WithEvents, WithTitle, WithDrawings, Fro
 
     }
 
-    /**
-     * 'orders' => $this->whenLoaded('orders', [
-     * 'customer_price' => $this->orders->avg('customer_price'),
-     * 'customer_total' => $this->orders->sum('customer_total'),
-     * 'factory_price' => $this->orders->avg('net_price'),
-     * 'margin' => $this->orders->avg('margin'),
-     * 'gross_total' => $this->orders->sum('gross_total'),
-     * 'total_weight' => $this->orders->sum('net_weight'),
-     * 'ppn_total' => $this->orders->sum('ppn_total'),
-     * 'pph22_total' => $this->orders->sum('pph22_total'),
-     * 'gross_ppn_total' => $this->orders->sum('gross_total') + $this->orders->sum('ppn_total'),
-     * 'total' => ($this->orders->sum('gross_total') + $this->orders->sum('ppn_total')) - $this->orders->sum('pph22_total'),
-     * 'margin_income' => $this->orders->sum('net_total'),
-     * 'net_income' => $this->orders->sum('gross_total')  - $this->orders->sum('pph22_total') - $this->orders->sum('customer_total')
-     * ]),
-     */
-
     public function map($row): array
     {
         return [
             [
                 '=row() - 6',
                 $row->factory?->name ?? '',
-                $row->trade_date,
-                $row->period_start,
-                $row->period_end,
+                $row->trade_date->format('Y-m-d'),
+                $row->period_start->format('Y-m-d'),
+                $row->period_end->format('Y-m-d'),
                 $row->orders->sum('net_weight'),
                 $row->orders->avg('margin'),
                 $row->orders->avg('net_price'),
@@ -106,7 +89,7 @@ class AllFactoryIncomeExport implements WithEvents, WithTitle, WithDrawings, Fro
             'C' => NumberFormat::FORMAT_DATE_DDMMYYYY,
             'D' => NumberFormat::FORMAT_DATE_DDMMYYYY,
             'E' => NumberFormat::FORMAT_DATE_DDMMYYYY,
-            'F' => NumberFormat::FORMAT_NUMBER_0,
+            'F' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'G' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'H' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
             'I' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1,
