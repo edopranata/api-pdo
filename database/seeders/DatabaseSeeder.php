@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         Role::create(['name' => $administrator]);
+
         foreach ($roles as $role) {
             Role::create(['name' => $role]);
 
@@ -106,7 +107,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             MenuSeeder::class,
 //            CustomerSeeder::class,
-            FactorySeeder::class,
+//            FactorySeeder::class,
 //            CashSeeder::class,
 //            OrderSeeder::class,
         ]);
