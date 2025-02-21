@@ -19,6 +19,7 @@ class InvoiceDataResource extends JsonResource
     {
         $loan_installment = $this->whenLoaded('installment', $this->installment?->balance) ?? 0;
         $total_orders = $this->whenLoaded('orders', $this->orders->sum('customer_total'));
+        $total_net_weight = $this->whenLoaded('orders', $this->orders->sum('net_weight'));
         return [
             'id' => $this->id,
             'customer_id' => $this->customer_id,
@@ -30,6 +31,7 @@ class InvoiceDataResource extends JsonResource
             'orders' => DeliveryOrderResource::collection($this->whenLoaded('orders')),
             'installment' => LoanResource::make($this->whenLoaded('installment')),
             'loan_installment' => $loan_installment,
+            'total_net_weight'  => $total_net_weight,
             'total_order' => $total_orders,
             'count_order' => $this->whenLoaded('orders', $this->orders->count()),
             'total' => $loan_installment + $total_orders
