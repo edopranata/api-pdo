@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Report\InvoiceDataController;
 use App\Http\Controllers\Api\Report\LoanReportController;
 use App\Http\Controllers\Api\Report\ReportCashController;
 use App\Http\Controllers\Api\Report\ReportDeliveryOrderController;
+use App\Http\Controllers\Api\Report\SingleCustomerOrderReportController;
 use App\Http\Controllers\Api\Report\TransactionReportController;
 use App\Http\Controllers\Api\Role\RoleController;
 use App\Http\Controllers\Api\User\UserChangePasswordController;
@@ -172,6 +173,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::post('loanReport', [LoanReportController::class, 'export'])->name('loanReportExport')->middleware('permission:admin.report.customerReport.loanReportExport,api');
             Route::get('orderReport', [CustomerOrderReportController::class, 'show'])->name('orderReport')->middleware('permission:admin.report.customerReport.orderReport,api');
             Route::post('orderReport', [CustomerOrderReportController::class, 'export'])->name('orderReportExport')->middleware('permission:admin.report.customerReport.orderReportExport,api');
+            Route::get('customerOrderReport', [SingleCustomerOrderReportController::class, 'index'])->name('customerOrderReport')->middleware('permission:admin.report.customerReport.customerOrderReport,api');
+            Route::post('customerOrderReport', [SingleCustomerOrderReportController::class, 'show'])->name('customerOrderReport')->middleware('permission:admin.report.customerReport.customerOrderReport,api');
+            Route::patch('customerOrderReport', [SingleCustomerOrderReportController::class, 'export'])->name('customerOrderReport')->middleware('permission:admin.report.customerReport.customerOrderReport,api');
         });
 
         Route::group(['prefix' => 'incomeReport', 'as' => 'incomeReport.'], function () {
