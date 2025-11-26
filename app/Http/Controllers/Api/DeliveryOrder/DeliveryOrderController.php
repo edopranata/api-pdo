@@ -91,7 +91,7 @@ class DeliveryOrderController extends Controller
                 'customer_id' => 'required|exists:customers,id',
                 'net_weight' => 'required|numeric|min:1',
                 'net_price' => 'required|numeric|min:1',
-                'margin' => 'required|numeric|max:100|min:' . $margin,
+                'margin' => 'required|numeric|max:1000|min:' . $margin,
             ]);
 
             if ($validator->fails()) {
@@ -154,7 +154,7 @@ class DeliveryOrderController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'net_weight' => 'required|numeric|min:1',
             'net_price' => 'required|numeric|min:1',
-            'margin' => ['required', 'numeric', 'max:100',
+            'margin' => ['required', 'numeric', 'max:1000',
                 function (string $attribute, mixed $value, Closure $fail) use ($margin) {
 
                     if ($value < $margin) {
