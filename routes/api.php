@@ -174,8 +174,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('orderReport', [CustomerOrderReportController::class, 'show'])->name('orderReport')->middleware('permission:admin.report.customerReport.orderReport,api');
             Route::post('orderReport', [CustomerOrderReportController::class, 'export'])->name('orderReportExport')->middleware('permission:admin.report.customerReport.orderReportExport,api');
             Route::get('customerOrderReport', [SingleCustomerOrderReportController::class, 'index'])->name('customerOrderReport')->middleware('permission:admin.report.customerReport.customerOrderReport,api');
-            Route::post('customerOrderReport', [SingleCustomerOrderReportController::class, 'show'])->name('customerOrderReport')->middleware('permission:admin.report.customerReport.customerOrderReport,api');
-            Route::patch('customerOrderReport', [SingleCustomerOrderReportController::class, 'export'])->name('customerOrderReport')->middleware('permission:admin.report.customerReport.customerOrderReport,api');
+            Route::post('customerOrderReport', [SingleCustomerOrderReportController::class, 'show'])->middleware('permission:admin.report.customerReport.customerOrderReport,api');
+            Route::patch('customerOrderReport', [SingleCustomerOrderReportController::class, 'export'])->middleware('permission:admin.report.customerReport.customerOrderReport,api');
         });
 
         Route::group(['prefix' => 'incomeReport', 'as' => 'incomeReport.'], function () {
